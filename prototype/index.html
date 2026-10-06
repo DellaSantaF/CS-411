@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magnus Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=20261006-5" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="." aria-label="Magnus Lab home">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>MAGNUS LAB</span>
+        </a>
+        <div class="status-pill"><span class="status-dot"></span><span id="statusText">READY TO LAUNCH</span></div>
+      </header>
+
+      <section class="intro">
+        <div>
+          <p class="eyebrow">FLUID DYNAMICS / 01</p>
+          <h1>Give it a spin.<br /><em>Watch it bend.</em></h1>
+        </div>
+        <p class="intro-copy">Explore the Magnus effect by changing the ball's flight conditions, then launch it into the airflow.</p>
+      </section>
+
+      <section class="workspace">
+        <div class="simulation-panel">
+          <div class="panel-toolbar">
+            <div class="toolbar-label"><span class="pulse"></span> LIVE TRAJECTORY</div>
+            <div class="axis-label"><span>Y</span><span class="axis-line"></span><span>X</span></div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="simulationCanvas" aria-label="Magnus effect ball simulation"></canvas>
+            <div class="canvas-note note-top">RELATIVE AIRFLOW <span>← ← ←</span></div>
+            <div class="canvas-note note-bottom">NO GRAVITY <span>×</span></div>
+            <div class="launch-marker"><span></span> LAUNCH POINT</div>
+          </div>
+          <div class="legend">
+            <span><i class="legend-dot ball-dot"></i> BALL</span>
+            <span><i class="legend-line"></i> TRAJECTORY</span>
+            <span><i class="legend-dot force-dot"></i> MAGNUS FORCE</span>
+          </div>
+        </div>
+
+        <aside class="control-panel">
+          <div class="control-heading">
+            <p class="eyebrow">CONTROL DECK</p>
+            <h2>Set the conditions</h2>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Ball speed</span><strong><output id="speedValue">18</output> <small>m/s</small></strong></div>
+            <input id="speedRange" type="range" min="8" max="36" value="18" step="1" />
+            <div class="range-labels"><span>8 m/s</span><span>36 m/s</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Ball size</span><strong><output id="sizeValue">0.22</output> <small>m</small></strong></div>
+            <input id="sizeRange" type="range" min="0.12" max="0.38" value="0.22" step="0.01" />
+            <div class="range-labels"><span>0.12 m</span><span>0.38 m</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Ball mass</span><strong><output id="massValue">0.15</output> <small>kg</small></strong></div>
+            <input id="massRange" type="range" min="0.05" max="1.5" value="0.15" step="0.01" />
+            <div class="range-labels"><span>0.05 kg</span><span>1.50 kg</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Rotation speed</span><strong><output id="spinValue">24</output> <small>rad/s</small></strong></div>
+            <input id="spinRange" type="range" min="-40" max="40" value="24" step="1" />
+            <div class="range-labels"><span>← -40</span><span>40 →</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>C<sub>L</sub> scale</span><strong><output id="clValue">1.00</output> <small>×</small></strong></div>
+            <input id="clRange" type="range" min="0" max="2" value="1" step="0.05" />
+            <div class="range-labels"><span>0.00×</span><span>2.00×</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Opposing airflow</span><strong><output id="airflowValue">6</output> <small>m/s</small></strong></div>
+            <input id="airflowRange" type="range" min="0" max="12" value="6" step="0.5" />
+            <div class="range-labels"><span>still air</span><span>12 m/s ←</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Air density</span><strong><output id="densityValue">1.225</output> <small>kg/m³</small></strong></div>
+            <input id="densityRange" type="range" min="0.5" max="2" value="1.225" step="0.025" />
+            <div class="range-labels"><span>0.5</span><span>2.0 kg/m³</span></div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label"><span>Simulation zoom</span><strong><output id="zoomValue">0.75</output> <small>×</small></strong></div>
+            <input id="zoomRange" type="range" min="0.25" max="1" value="0.75" step="0.05" />
+            <div class="range-labels"><span>0.25×</span><span>1.00×</span></div>
+          </div>
+
+          <div class="direction-card"><span class="direction-icon">↻</span><div><span class="mini-label">SPIN DIRECTION</span><strong id="directionText">TOP SPIN / RIGHT</strong></div></div>
+
+          <button id="launchButton" class="launch-button" type="button"><span class="button-icon">↗</span><span>LAUNCH BALL</span><span class="button-key">SPACE</span></button>
+          <p class="hint">Press <kbd>SPACE</kbd> or launch again anytime after the flight ends.</p>
+
+          <div class="readout-grid">
+            <div><span>FLIGHT TIME</span><strong id="flightTime">—</strong></div>
+            <div><span>RANGE</span><strong id="flightRange">—</strong></div>
+          </div>
+        </aside>
+      </section>
+
+      <footer><span>MAGNUS LAB / INTERACTIVE PHYSICS</span><span>F<sub>M</sub> = ½ρC<sub>L</sub>Av² &nbsp;·&nbsp; NO GRAVITY</span></footer>
+    </main>
+    <script src="script.js?v=20261006-13"></script>
+  </body>
+</html>
