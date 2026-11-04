@@ -18,7 +18,6 @@ const densityValue = document.getElementById('densityValue');
 const zoomValue = document.getElementById('zoomValue');
 const directionText = document.getElementById('directionText');
 const launchButton = document.getElementById('launchButton');
-const statusText = document.getElementById('statusText');
 const flightTime = document.getElementById('flightTime');
 const flightRange = document.getElementById('flightRange');
 
@@ -95,7 +94,6 @@ function launch() {
   flight = { x: getLaunchX(), y: getLaunchHeight(), vx: speed, vy: 0, speed, radius, mass, spin, clScale, airflowSpeed, airDensity, t: 0, points: [], angle: 0, complete: false };
   flightTime.textContent = '—';
   flightRange.textContent = '—';
-  statusText.textContent = 'FLIGHT IN PROGRESS';
   lastFrame = performance.now();
   animationId = requestAnimationFrame(animate);
 }
@@ -145,7 +143,6 @@ function animate(now) {
   drawScene();
   if (flight.complete) {
     animationId = null;
-    statusText.textContent = 'FLIGHT COMPLETE';
     flightTime.textContent = `${flight.t.toFixed(2)} s`;
     flightRange.textContent = `${flight.x.toFixed(1)} m`;
     return;
