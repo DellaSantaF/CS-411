@@ -8,15 +8,30 @@ import { controlTargets, fields, helpTargets, targetField } from '../src/shared/
 import { parameters as parameterDefinitions } from '../src/physics/formula.ts';
 import type { DeveloperSettings, EvaluationRequest, LearnerContext, SessionInfo, Stage } from '../src/shared/contracts.ts';
 import type { CheckedAnswer, GuidanceContext } from './ai/contracts.ts';
-import { developmentEvaluator, developmentTutor } from './ai/development.ts';
+import { providersFromEnvironment } from './ai/providers.ts';
+import type { Providers } from './ai/providers.ts';
 
 type Participant = { keyHash: string; participantId: string; condition: SessionInfo['condition'] };
-type Session = { info: SessionInfo; settings: DeveloperSettings; checks: CheckedAnswer[]; guidance: { target: string; message: string }[] };
+type Session = { info: SessionInfo; settings: DeveloperSettings; checks: CheckedAnswer[]; guidance: { target: string; message: string }[]; calls: number; pending: number; lastProactive: number };
 const hash = (key: string) => createHash('sha256').update(key.trim().toUpperCase()).digest('hex');
 class HttpError extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } }
 const defaults = (): DeveloperSettings => ({ skipSeconds: 240, thinkingTime: 'balanced', evaluator: 'auto', tutor: 'auto' });
 
-export async function createActivityServer({ developerEnabled = process.env.DEVELOPER_TOOLS !== '0' } = {}) {
+export async function createActivityServer({ developerEnabled = process.env.DEVELOPER_TOOLS !== '0', providers: suppliedProviders, maxLiveCalls = Number(process.env.OPENAI_MAX_CALLS_PER_SESSION || 40) }: { developerEnabled?: boolean; providers?: Providers; maxLiveCalls?: number } = {}) {
+  const providers = suppliedProviders ?? await providersFromEnvironment();
+  if (!Number.isInteger(maxLiveCalls) || maxLiveCalls < 1 || maxLiveCalls > 1000) throw new Error('OPENAI_MAX_CALLS_PER_SESSION must be an integer from 1 to 1000.');
+  async function invoke<T>(session: Session, action: () => Promise<T>): Promise<T> {
+    if (providers.mode === 'live') {
+      if (session.calls >= maxLiveCalls) throw new HttpError(429, 'This session has reached its AI request limit.');
+      if (session.pending >= 4) throw new HttpError(429, 'Please wait for the current requests to finish.');
+      session.calls++; session.pending++;
+    }
+    try { return await action(); }
+    catch (error) {
+      if (providers.mode === 'live') console.warn('OpenAI request failed', { status: (error as { status?: number }).status ?? 'unavailable' });
+      throw error;
+    } finally { if (providers.mode === 'live') session.pending--; }
+  }
   const sessions = new Map<string, Session>();
   let participants: Participant[] = [];
   try {
@@ -54,6 +69,7 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
     const drafts: LearnerContext['drafts'] = {};
     const outcomes: LearnerContext['outcomes'] = {};
     for (const field of fields) {
+      if (!(value.stage === 'formula' ? ['cl', 'rho', 'v', 'area'] : value.phase === 'prediction' ? ['prediction'] : ['explanation']).includes(field)) continue;
       drafts[field] = typeof value.drafts?.[field] === 'string' ? value.drafts[field]!.slice(0, 2000) : '';
       const status = value.outcomes?.[field];
       outcomes[field] = status && ['editable', 'checking', 'accepted', 'revealed'].includes(status) ? status : 'editable';
@@ -94,9 +110,9 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
         if (!participant) throw new HttpError(400, 'This key was not recognized. Check the key provided for your session.');
         const settings = defaults();
         const info: SessionInfo = { sessionId: randomUUID(), participantId: participant.participantId, condition: participant.condition,
-          skipSeconds: settings.skipSeconds, thinkingTime: settings.thinkingTime, aiMode: 'development' };
+          skipSeconds: settings.skipSeconds, thinkingTime: settings.thinkingTime, aiMode: providers.mode };
         const token = randomBytes(32).toString('hex');
-        sessions.set(token, { info, settings, checks: [], guidance: [] });
+        sessions.set(token, { info, settings, checks: [], guidance: [], calls: 0, pending: 0, lastProactive: 0 });
         reply(response, 200, { token, session: info }); return;
       }
       if (url.pathname.startsWith('/api/')) {
@@ -109,10 +125,11 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
           if (!fields.includes(data.field as EvaluationRequest['field']) || typeof data.text !== 'string' || data.text.length > 2000 || !Number.isInteger(data.revision)) throw new HttpError(400, 'Invalid answer.');
           const submitted: EvaluationRequest = { field: data.field as EvaluationRequest['field'], text: data.text, revision: data.revision as number };
           // Only this Check endpoint invokes the evaluator. Diagnostics remain server-side.
-          const result = await developmentEvaluator(() => session.settings).evaluate(submitted);
+          const previous = providers.mode === 'live' ? session.checks.findLast(check => check.field === submitted.field && check.text === submitted.text) : undefined;
+          const result = previous ? { accepted: previous.accepted, diagnostics: previous.diagnostics } : await invoke(session, () => providers.evaluator(() => session.settings).evaluate(submitted));
           session.checks.push({ ...submitted, ...result, at: Date.now() });
           session.checks = session.checks.slice(-24);
-          reply(response, 200, { accepted: result.accepted, revision: submitted.revision, mode: 'development' }); return;
+          reply(response, 200, { accepted: result.accepted, revision: submitted.revision, mode: providers.mode }); return;
         }
         if (url.pathname === '/api/tutor' && request.method === 'POST') {
           const data = await body(request);
@@ -121,7 +138,11 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
           if (!requested && session.info.condition !== 'proactive') throw new HttpError(403, 'Automatic guidance is unavailable in this condition.');
           const snapshot = context(data, session);
           if (requested && !controlTargets.includes(snapshot.target as typeof controlTargets[number])) throw new HttpError(400, 'Choose an interactive control for guidance.');
-          const result = await developmentTutor(() => session.settings).assess(snapshot, requested);
+          if (providers.mode === 'live' && !requested) {
+            if (Date.now() - session.lastProactive < 45_000) { reply(response, 200, { decision: 'wait', target: snapshot.target, message: '' }); return; }
+            session.lastProactive = Date.now();
+          }
+          const result = await invoke(session, () => providers.tutor(() => session.settings).assess(snapshot, requested));
           if (result.decision === 'help') { session.guidance.push({ target: result.target, message: result.message }); session.guidance = session.guidance.slice(-4); }
           reply(response, 200, result); return;
         }
@@ -133,9 +154,10 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
               || !['short', 'balanced', 'extended'].includes(String(data.thinkingTime))
               || !['auto', 'accept', 'reject', 'technical-error'].includes(String(data.evaluator))
               || !['auto', 'help', 'wait', 'technical-error'].includes(String(data.tutor))) throw new HttpError(400, 'Invalid development settings.');
+            if (providers.mode === 'live' && (data.evaluator !== 'auto' || data.tutor !== 'auto')) throw new HttpError(400, 'Simulated outcomes require AI_MODE=development and a server restart.');
             session.settings = data as unknown as DeveloperSettings;
           }
-          reply(response, 200, { settings: session.settings, session: session.info, checks: session.checks, guidance: session.guidance }); return;
+          reply(response, 200, { settings: session.settings, session: session.info, checks: session.checks, guidance: session.guidance, aiRequests: { used: session.calls, limit: maxLiveCalls } }); return;
         }
         throw new HttpError(404, 'Not found.');
       }
@@ -161,5 +183,5 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const server = await createActivityServer();
   const port = Number(process.env.PORT) || 3001;
-  server.listen(port, '127.0.0.1', () => console.log(`Activity API: http://127.0.0.1:${port} · AI development substitutes only`));
+  server.listen(port, '127.0.0.1', () => console.log(`Activity API: http://127.0.0.1:${port} · AI mode: ${process.env.AI_MODE || 'development'}`));
 }

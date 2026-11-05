@@ -18,7 +18,7 @@ export function targetField(target: HelpTarget): FieldId | null {
 export type BeltSettings = { beltSpeed: number; direction: number };
 export interface SessionInfo {
   sessionId: string; participantId: string; condition: Condition;
-  skipSeconds: number; thinkingTime: ThinkingTime; aiMode: 'development';
+  skipSeconds: number; thinkingTime: ThinkingTime; aiMode: 'development' | 'live';
 }
 export interface Answer {
   text: string; status: AnswerStatus; feedback: string; revision: number; checks: number;

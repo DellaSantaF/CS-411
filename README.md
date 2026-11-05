@@ -1,6 +1,6 @@
-﻿# Magnus effect learning activity
+# Magnus effect learning activity
 
-Development implementation complete through the simulated AI boundary. The designer has approved the working activity and latest interface revisions; no additional interface-polish phase is pending. The project is ready for handoff to a separate AI-integration agent. The external activity specification remains the primary source, with subsequent approved feedback taking precedence. It has not been copied into this repository.
+The first OpenAI integration prototype is implemented. Follow [OpenAI setup](./openai-setup.md) to add your key locally and run a three-call connection check. Both AI roles default to gpt-6-luna with low reasoning. The approved interface and numerical model are preserved; live teaching quality still needs review.
 
 ## Run locally
 
@@ -11,7 +11,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Open **http://127.0.0.1:5173/**. The API runs locally on port 3001. No API key or physics reference is needed. Keep the terminal open; Ctrl+C stops both servers.
+Open **http://127.0.0.1:5173/**. The API runs locally on port 3001. Without a local .env, the application uses free development substitutes. With AI_MODE=live in .env, an API key and the supplied physics reference are required. Keep the terminal open; Ctrl+C stops both servers.
 
 | Review key | Assigned support condition |
 | --- | --- |
@@ -27,7 +27,7 @@ npm.cmd run build
 npm.cmd start
 ```
 
-Then open **http://127.0.0.1:3001/**. This still uses simulated AI. The commands above use `npm.cmd` for Windows PowerShell; `npm` is equivalent in other shells.
+Then open **http://127.0.0.1:3001/**. The AI_MODE setting selects live OpenAI or free development substitutes. The commands above use `npm.cmd` for Windows PowerShell; `npm` is equivalent in other shells.
 
 ## Inspect the complete flow
 
@@ -35,7 +35,7 @@ Participant key → pre-test placeholder → treadmill → illustrated introduct
 
 The simulations, controls, response states, independent checks, progression, timed fallbacks, and tutor interfaces work. The quiz pages are placeholders for content supplied later. [Motion notes](./motion-review.md) describe the approved treadmill exaggerations. [Integration notes](./integration-notes.md) provide the next agent's starting points, future AI materials, and remaining integration decisions.
 
-**AI is simulated.** The development evaluator uses limited keyword recognition; it is not a validated semantic assessor. The development tutor uses contextual question templates and a small demonstration of help/wait decisions; it is not an LLM. These substitutes exercise the full interfaces without awarding progress on a tutor's behalf. The official SDK adapters are prepared but disconnected. Providing a key in the environment does not activate them.
+**In AI_MODE=development, AI is simulated.** The development evaluator uses limited keyword recognition; it is not a validated semantic assessor. The development tutor uses contextual question templates and a small demonstration of help/wait decisions; it is not an LLM. These substitutes exercise the full interfaces without awarding progress on a tutor's behalf. Set AI_MODE=live and provide OPENAI_API_KEY to activate the official Responses adapters. See [the setup walkthrough](./openai-setup.md) for costs, limits and verification.
 
 ## Developer review controls
 
@@ -50,7 +50,7 @@ After entering a key, open **http://127.0.0.1:5173/developer** in the **same tab
 
 Save settings and use **Return to activity**. An already-open tutor bubble stays open until dismissed; changing the tutor's next outcome does not close it.
 
-The default proactive scheduler considers a compact snapshot at most once per 45 seconds, only while the activity is visible, relevant context has changed, and no bubble/request is open. It does not evaluate drafts for completion. The future guidance model will decide help/wait; the present substitute is only a development demonstration.
+The default proactive scheduler considers a compact snapshot at most once per 45 seconds, only while the activity is visible, relevant context has changed, and no bubble/request is open. It does not evaluate drafts for completion. In live mode the guidance model decides help/wait; development mode uses the contextual substitute.
 
 ## Issue participant keys
 
@@ -63,7 +63,7 @@ npm.cmd run keys -- --condition proactive --count 10
 
 This creates or appends to the private, ignored server mapping `participants.local.json` and writes a private `participant-keys-*.csv` handout list. Give each participant only their key. The mapping stores a hash of each key, a random participant ID, and its assigned condition; raw keys are in the handout CSV. Restart the API to load new mappings. Reusing a key currently creates a new session for the same participant and condition; the study's reuse rule is pending.
 
-Set `DEVELOPER_TOOLS=0` in an ignored `.env` file to disable developer endpoints and the demo keys, then restart the server. Generated participant keys continue working. Durable data collection and live AI must be completed separately before study use.
+Set `DEVELOPER_TOOLS=0` in an ignored `.env` file to disable developer endpoints and the demo keys, then restart the server. Generated participant keys continue working. Durable data collection and review of live-model teaching behavior remain necessary before study use.
 
 ## Verify
 
@@ -72,13 +72,13 @@ npm.cmd test
 npm.cmd run build
 ```
 
-Tests cover the approved motion port, all treadmill speed/direction ranges, formula extremes and visual mappings, API condition boundaries, private diagnostics, technical-failure handling, inactive live providers, and key generation. Both full support-condition flows were also checked in the browser, including timer pause, answer locking, independent checks, help/wait, and discovered/revealed counters. See [verification and review notes](./integration-notes.md).
+Tests cover the approved motion port, all treadmill speed/direction ranges, formula extremes and visual mappings, API condition boundaries, private diagnostics, technical-failure handling, live provider routing, request settings, cost limits and technical failures, and key generation. Both full support-condition flows were also checked in the browser, including timer pause, answer locking, independent checks, help/wait, and discovered/revealed counters. See [verification and review notes](./integration-notes.md).
 
 ## Main files
 
 - [Activity controller](./src/App.tsx), [state](./src/state.ts), and [shared contracts](./src/shared/contracts.ts).
 - [Treadmill component](./src/components/Treadmill.tsx) and [approved numerical model](./src/physics/treadmill.js).
 - [Formula scene](./src/components/FormulaScene.tsx) and [formula configuration](./src/physics/formula.ts).
-- [Server](./server/index.ts), [development substitutes](./server/ai/development.ts), and [disconnected OpenAI adapters](./server/ai/openai.ts).
+- [Server](./server/index.ts), [development substitutes](./server/ai/development.ts), and [OpenAI adapters](./server/ai/openai.ts).
 
 The [original layout preview](./design-proposal.html) and [standalone treadmill](./prototype/treadmill.html) remain as review references. Use the local application above for the complete flow.

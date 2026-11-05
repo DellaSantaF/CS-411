@@ -1,3 +1,34 @@
+# OpenAI prototype update — 5 November 2026
+
+The integration prototype now supports explicit `AI_MODE=live` using `gpt-6-luna`
+with `reasoning.effort=low` for both evaluator and tutor. Follow the
+[setup walkthrough](./openai-setup.md). The supplied
+[physics reference](./magnus_effect_physics_reference.md) is loaded at startup;
+only relevant sections are sent. Its older separate airflow/spin controls are
+excluded in favour of the approved four-control scene. Physics and interface
+behavior are preserved.
+
+Live mode requires a local API key, uses bounded structured responses, zero
+SDK retries, compact task context, repeat-check caching and a configurable
+40-attempt session cap. Simulated providers remain available in development
+mode. Live/development labels reflect the active server provider, and live
+mode disables forced simulated outcomes. The existing 45-second proactive
+cadence is also enforced server-side.
+
+Verification: all 13 automated tests pass and the production TypeScript/bundle
+build passes. Transport tests inspect actual SDK requests with mocked responses;
+they do not establish live-model correctness. Account connection and semantic
+checks require the user's locally saved key. `npm run ai:check` makes three
+billable calls; `npm run ai:check -- --full` makes 12. Representative fixtures
+are provisional, not agreed study grading standards. Scientific, instructional
+and study-data validation remain open.
+
+Browser checks in free development mode confirmed reactive control help and parameter acceptance/reveal, plus proactive mode with no Help buttons and one contextual guidance panel. These checks used a formula-stage test fixture and do not claim a new full-flow live-model validation.
+
+The original handoff below is historical context. Its statements that no physics
+reference exists or live adapters are disconnected are superseded by this update.
+
+---
 # Completed activity and AI integration handoff
 
 Status: implementation complete through the simulated AI boundary. The designer approved the working activity and latest interface changes on 5 November 2026 and requested handoff to a separate AI-integration agent. No further interface-polish phase or designer review checkpoint is pending for this scope. Live AI remains disconnected. No physics-reference file has been created. Interface approval does not constitute scientific validation of the illustrative model or validation of the AI substitutes for study use.
