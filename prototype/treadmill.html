@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Treadmill · Motion review</title>
+  <link rel="stylesheet" href="treadmill.css">
+  <script defer src="treadmill-model.js"></script>
+  <script defer src="treadmill.js"></script>
+</head>
+<body>
+  <div class="review-strip">Motion review <span>Development demonstration · AI and later activity stages are not connected</span><a href="../design-proposal.html">Layout proposal</a></div>
+  <main>
+    <header><span class="brand">Learning activity</span><span class="stage-label">Treadmill</span></header>
+    <div class="progress" aria-label="Treadmill stage"><span></span></div>
+    <h1>Treadmill exploration</h1>
+    <div class="layout">
+      <section class="simulation" aria-label="Treadmill simulation and controls">
+        <div class="scene">
+          <div class="scene-viewport">
+          <svg id="scene" viewBox="0 0 760 490" role="img" aria-label="A ball drops onto a running treadmill and rebounds with spin. The trajectory is exaggerated for teaching.">
+            <defs>
+              <pattern id="belt-pattern" width="48" height="28" patternUnits="userSpaceOnUse"><path d="M0 1L-8 27M48 1L40 27" stroke="#a3b9ac" stroke-width="2"/></pattern>
+              <clipPath id="belt-clip"><rect x="70" y="430" width="620" height="28" rx="14"/></clipPath>
+              <marker id="spin-head" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#315f89"/></marker>
+              <g id="sphere-shape"><circle r="12" fill="#c5ca74" stroke="#858b48" stroke-width="1.3"/><g data-seams><path d="M-10-6Q0 6 10-6M-10 6Q0-6 10 6" fill="none" stroke="#f8f8dc" stroke-width="1.8"/><circle cx="6" cy="-5" r="1.8" fill="#777e3a"/></g></g>
+              <g id="spin-shape" fill="none" stroke="#315f89" stroke-width="1.8" marker-end="url(#spin-head)"><path d="M20 0A20 20 0 0 0 0-20"/><path d="M-20 0A20 20 0 0 0 0 20"/></g>
+            </defs>
+            <rect width="760" height="490" fill="#f7f9f6"/>
+            <path d="M70 103H690M70 211H690M70 319H690" stroke="#e7ece5" stroke-width="1"/>
+            <path id="drop-path" d="" fill="none" stroke="#becbc2" stroke-width="1.5" stroke-dasharray="4 6"/>
+            <path id="trajectory" d="" fill="none" stroke="#396f82" stroke-opacity=".38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g aria-hidden="true">
+              <rect x="60" y="427" width="640" height="40" rx="20" fill="#d4ded5"/>
+              <rect x="70" y="430" width="620" height="28" rx="14" fill="#596e62"/>
+              <g clip-path="url(#belt-clip)"><rect id="belt-texture" x="22" y="430" width="716" height="28" fill="url(#belt-pattern)"/></g>
+              <path d="M108 466L102 478M652 466L658 478" stroke="#73877a" stroke-width="6" stroke-linecap="round"/>
+              <path id="belt-arrow" d="M349 444H411M404 439L411 444L404 449" fill="none" stroke="#f0f5ec" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g id="ball"><g data-body><use href="#sphere-shape"/></g><g data-spin><use href="#spin-shape"/></g></g>
+            <g id="ghost" opacity=".27" visibility="hidden"><g data-body><use href="#sphere-shape"/></g><g data-spin><use href="#spin-shape"/></g></g>
+            <g id="pause-badge" visibility="hidden"><rect x="22" y="22" width="191" height="36" rx="7" fill="#eee5d0"/><path d="M38 33V47M44 33V47" stroke="#78633c" stroke-width="3"/><text x="57" y="45" fill="#655536" font-family="Segoe UI, Arial, sans-serif" font-size="14">Paused · prediction</text></g>
+          </svg>
+          <div id="ball-description" class="scene-callout ball-callout"><p>This is a tennis ball.</p><button id="confirm-ball" type="button" aria-label="Confirm tennis ball description">Understood</button></div>
+          <div id="belt-description" class="scene-callout belt-callout"><p>This is a running treadmill.</p><button id="confirm-belt" type="button" aria-label="Confirm treadmill description">Understood</button></div>
+          </div>
+          <div class="scene-status"><span id="status" role="status" aria-live="polite">Ready to drop</span><span>Teaching model · motion exaggerated</span></div>
+        </div>
+        <div class="controls">
+          <fieldset id="belt-settings" disabled>
+            <legend>Belt settings</legend>
+            <div class="control-grid">
+              <div><span class="control-label" id="direction-label">Belt direction</span><div class="direction-toggle" role="group" aria-labelledby="direction-label"><span class="direction-thumb" aria-hidden="true"></span><button id="direction-left" type="button" aria-pressed="false" data-direction="-1">← Left</button><button id="direction-right" type="button" aria-pressed="true" data-direction="1">Right →</button></div></div>
+              <div><label for="speed">Belt speed <output id="speed-value" for="speed">8.0 m/s</output></label><input type="range" id="speed" min="6" max="10" step="0.5" value="8" aria-valuetext="8.0 metres per second"><div class="range-labels"><span>6 m/s</span><span>10 m/s</span></div></div>
+            </div>
+          </fieldset>
+          <div class="run-row"><p id="settings-note">Belt settings become available after the reveal.</p><button id="run" type="button" hidden>Run again</button></div>
+        </div>
+      </section>
+      <section id="task-window" class="task card" aria-label="Current task">
+        <div id="setup-panel">
+          <h2>Before starting</h2>
+          <p id="setup-instruction" role="status">Confirm both descriptions in the scene, then drop the ball.</p>
+          <button id="drop" type="button" disabled>Drop ball</button>
+        </div>
+        <div id="dropping-panel" hidden><h2>Observe the contact</h2><p>The animation will pause just after the ball leaves the belt.</p></div>
+        <div id="prediction-panel" hidden>
+          <h2>Predict the motion</h2><p>Which way will the ball's path bend as it rises?</p>
+          <div class="directions" aria-label="Possible directions, for illustration"><span>↖ Left</span><span>↑ Straight</span><span>↗ Right</span></div>
+          <label for="prediction">Your prediction</label><textarea id="prediction" rows="4" placeholder="Write your prediction"></textarea>
+          <button id="check" type="button" disabled>Check</button><p id="prediction-feedback" class="feedback" role="status" aria-live="polite"></p>
+          <button id="reveal" class="flow-action" type="button" disabled>Reveal what happens</button>
+        </div>
+        <div id="reveal-panel" hidden><h2>Observe the trajectory</h2><p id="reveal-description">The faded replay shows the drop and contact before the trajectory continues.</p></div>
+        <div id="exploration-panel" hidden><h2>Explore the motion</h2><p>Change the belt direction or speed, then select Run again.</p><p class="review-note">The explanation task will be connected after this motion review.</p></div>
+      </section>
+    </div>
+    <details class="developer-notes"><summary>Developer review notes · physical and display simplifications</summary><div>
+      <p>This demonstration uses gravity, an idealized belt-contact impulse, and a Magnus force perpendicular to velocity. It is not calibrated to an ordinary treadmill bounce.</p>
+      <ul><li>Release height: 4.5 m; rebound restitution: 0.92. Belt speeds: 6–10 m/s (default 8).</li><li>The aerodynamic force is amplified 12× relative to the selected baseline coefficient. Baseline lift coefficient: 0.25 at the default belt speed, varying proportionally with belt speed as an illustrative mapping.</li><li>Horizontal distance is shown at 2.5× the vertical scale. Playback runs at 0.55× physical time. The rendered ball's rim speed matches the rendered belt speed, using rotation frequency = belt speed / ball circumference in the drawing's units.</li><li>Contact is illustrated over 25 ms, with at most 4% compression. Visible spin is synchronized for teaching; the trajectory still uses the idealized solid-sphere impulse model. The tennis-ball drawing does not make this a calibrated tennis-ball model.</li><li>Air drag, spin decay, and deformation dynamics are omitted. Only ascent is shown; playback stops at the apex. Belt and ball animation share the same clock and pause together.</li></ul>
+      <p>The motion model and these settings remain provisional until designer review. Details and source links are in <a href="../motion-review.md">motion-review.md</a>.</p>
+    </div></details>
+  </main>
+</body>
+</html>
