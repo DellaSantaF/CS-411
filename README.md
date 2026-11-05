@@ -1,6 +1,6 @@
 ﻿# Magnus effect learning activity
 
-Working-activity review build. The treadmill motion and visual direction are approved; the complete flow is ready for designer inspection before final polish. The external activity specification remains the primary source, with subsequent approved feedback taking precedence. It has not been copied into this repository.
+Development implementation complete through the simulated AI boundary. The designer has approved the working activity and latest interface revisions; no additional interface-polish phase is pending. The project is ready for handoff to a separate AI-integration agent. The external activity specification remains the primary source, with subsequent approved feedback taking precedence. It has not been copied into this repository.
 
 ## Run locally
 
@@ -33,7 +33,7 @@ Then open **http://127.0.0.1:3001/**. This still uses simulated AI. The commands
 
 Participant key → pre-test placeholder → treadmill → illustrated introduction → formula discovery → post-test placeholder.
 
-The simulations, controls, response states, independent checks, progression, timed fallbacks, and tutor interfaces work. The quiz pages are placeholders for content supplied later. [Motion notes](./motion-review.md) describe the approved treadmill exaggerations. [Integration notes](./integration-notes.md) identify pending review choices and future AI materials.
+The simulations, controls, response states, independent checks, progression, timed fallbacks, and tutor interfaces work. The quiz pages are placeholders for content supplied later. [Motion notes](./motion-review.md) describe the approved treadmill exaggerations. [Integration notes](./integration-notes.md) provide the next agent's starting points, future AI materials, and remaining integration decisions.
 
 **AI is simulated.** The development evaluator uses limited keyword recognition; it is not a validated semantic assessor. The development tutor uses contextual question templates and a small demonstration of help/wait decisions; it is not an LLM. These substitutes exercise the full interfaces without awarding progress on a tutor's behalf. The official SDK adapters are prepared but disconnected. Providing a key in the environment does not activate them.
 

@@ -1,6 +1,6 @@
 # Treadmill motion review
 
-Status: revised treadmill motion and presentation approved by the designer. The working activity extends this approved version; formula settings and new instructional content still require working-activity review.
+Status: revised treadmill motion and presentation approved by the designer. The complete working activity and subsequent interface revisions have also been approved; see [integration handoff](./integration-notes.md). This document retains the early motion milestone and its physical simplifications.
 
 Open [the demonstration](./prototype/treadmill.html) directly in a browser. It needs no installation or server. Confirm the descriptions beside the ball and treadmill, drop the ball, submit a prediction, and select **Reveal what happens**. After the reveal, change belt settings and use the single **Run again** button.
 
@@ -75,4 +75,4 @@ NASA Glenn's [Ideal Lift of a Spinning Ball](https://www1.grc.nasa.gov/beginners
 - Requested flow additions: participant key entry, then pre-test placeholder, treadmill, introduction, formula exploration, then post-test placeholder. Quiz content will be supplied later.
 - Participant keys will determine support condition on the server. Each session receives a random ID. Study-data recording is deferred. Key issuance/reuse policy can be settled when entry is implemented; it does not block the motion review.
 - Approved at the motion checkpoint: the revised treadmill numerical/display settings and presentation above.
-- Still for working-activity review: formula numerical/display choices, draft instructional content, and the eventual operational interpretation of the tutor thinking allowance. Live AI remains disabled.
+- The working activity, formula display defaults, and instructional presentation have since been accepted. Scientific reference alignment and the operational interpretation of the tutor thinking allowance remain part of the separate AI-integration work. Live AI remains disabled.

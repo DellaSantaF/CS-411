@@ -1,13 +1,25 @@
-# Working-activity review and future integration
+# Completed activity and AI integration handoff
 
-Status: full development flow implemented and checked; awaiting designer inspection before final polish. Treadmill motion and the revised interface direction are approved. Live AI remains disconnected. No physics-reference file has been created.
+Status: implementation complete through the simulated AI boundary. The designer approved the working activity and latest interface changes on 5 November 2026 and requested handoff to a separate AI-integration agent. No further interface-polish phase or designer review checkpoint is pending for this scope. Live AI remains disconnected. No physics-reference file has been created. Interface approval does not constitute scientific validation of the illustrative model or validation of the AI substitutes for study use.
 
-## Items for this review
+## Start here: next agent
+
+Read the external activity specification and preserve the approved flow and interface. Use this document for implementation context rather than as a replacement specification.
+
+- [Server routing and provider selection](./server/index.ts) currently instantiate only development providers. Connect the prepared factories here after the designer supplies the reference and API access.
+- [OpenAI adapters](./server/ai/openai.ts) contain the disconnected official-SDK Responses connections, role-specific model configuration, and structured-output contracts. [AI contracts and rubrics](./server/ai/contracts.ts) keep evaluator and tutor responsibilities separate; [shared contracts](./src/shared/contracts.ts) define control-specific context and learner-facing results.
+- Review the development-only AI mode types, response labels, and interface notice when enabling live providers. Supplying credentials alone intentionally does not activate them.
+- Validate acceptance, private diagnostics, Socratic guidance, and proactive help/wait behavior with agreed examples. Keep physics, timers, progression, and interface state in application code. Keep developer substitutes available separately for testing.
+- Run `npm test` and `npm run build`, then check both support conditions in the browser. Keep the approved numerical/display model and interface unless the designer authorizes a change.
+
+Quizzes and durable research-data collection remain separate, deferred work; they do not block AI integration.
+
+## Accepted implementation choices
 
 - **Formula scene:** four controls under the scene, a compact colour-coded formula below, and a separate response column. Rotation is counterclockwise and relative airflow moves left; force starts at the sphere's centre and points upward throughout. The introduction and tennis example use this same convention.
 - **Latest review changes:** the initial treadmill prediction uses three direction buttons and is recorded locally without evaluation. Controls appear with the exploration invitation after the first reveal. Subsequent runs retain one faint dashed previous path and apex shadow for comparison. Task prompts have larger, darker text beneath small task numbers.
-- **Draft content:** task prompts, illustrated Magnus introduction, the backspin tennis example, and timed fallback descriptions. These are implemented drafts for review, not newly confirmed scientific requirements.
-- **Formula ranges and visuals:** the following are provisional implementation choices for designer inspection. They are positive, bounded, and remain usable at combined extremes.
+- **Instructional content:** task prompts, illustrated Magnus introduction, the backspin tennis example, and timed fallback descriptions are part of the accepted working version. Their scientific grounding and AI rubrics should be checked against the forthcoming designer-supplied reference during integration.
+- **Formula ranges and visuals:** the following are accepted implementation defaults. They are positive, bounded, and remain usable at combined extremes; they are illustrative choices rather than experimentally calibrated values.
 
 | Slider | Parameter | Range | Initial value | Visual cue |
 | --- | --- | --- | --- | --- |
