@@ -24,6 +24,19 @@ The [.env.example](./.env.example) file is shareable and must stay blank-key.
 If you already have the key in a terminal environment, that value takes precedence
 over Node's env-file value. Restart the server after any configuration change.
 
+If the terminal has a conflicting key, clear only that terminal's override before
+starting the app or running the check. Node will then load the saved local key:
+
+```powershell
+Remove-Item Env:OPENAI_API_KEY -ErrorAction SilentlyContinue
+```
+
+Live check on 17 November 2026: the three-call check passed using the saved local
+key: intuitive density accepted, explicit rotation negation rejected, and a
+Socratic observation question returned. Usage was 2,581 input tokens and 132 output
+tokens (including 29 reasoning tokens). This verifies that small sample and
+account connection, not the full learning flow or study readiness.
+
 An API key identifies the OpenAI API project paying for requests. Check that
 project's billing and model access in the OpenAI platform. Actual requests are
 required to confirm account access; a ChatGPT/Codex model selection alone cannot

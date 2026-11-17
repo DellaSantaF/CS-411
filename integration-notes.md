@@ -1,5 +1,14 @@
 # OpenAI prototype update — 5 November 2026
 
+**Live connection verified, 17 November 2026:** the three-call check passed with
+the user's saved local key: intuitive density accepted, explicit rotation
+negation rejected, and reactive Socratic guidance returned. Usage: 2,581 input
+tokens and 132 output tokens, including 29 reasoning tokens. An inherited
+`OPENAI_API_KEY` initially overrode the local file and caused HTTP 401; clearing
+that test process's override resolved it. No key was displayed. Full live-flow
+and study validation remain open. This supersedes the pending-account-check
+statement below.
+
 The integration prototype now supports explicit `AI_MODE=live` using `gpt-6-luna`
 with `reasoning.effort=low` for both evaluator and tutor. Follow the
 [setup walkthrough](./openai-setup.md). The supplied
