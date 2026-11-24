@@ -139,3 +139,11 @@ h3 { font-size: 16px; font-weight: 600; margin: 0 0 9px; }
 .formula>div { font-size: clamp(25px, 2.5vw, 36px); gap: 8px; }
 .formula-term { font-size: clamp(30px, 3vw, 42px); min-width: 40px; }
 .formula sub { font-size: .5em; }
+
+.parameter-eyebrow { display: block; color: #75818b; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 5px; }
+.discovered-name { font-size: 23px; line-height: 1.2; margin: 0 0 10px; color: #263c50; }
+.formula-term.masked { background: var(--parameter); color: white; }
+.formula .force-symbol { display: inline-block; white-space: nowrap; }
+.formula sub { position: relative; top: .3em; vertical-align: baseline; line-height: 0; }
+.parameter-control label { display: block; padding-right: 0; min-height: 3.5em; line-height: 1.35; overflow-wrap: anywhere; }
+.parameter-control:has(.help) { padding-top: 43px; }

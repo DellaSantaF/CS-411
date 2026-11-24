@@ -13,10 +13,10 @@ export function developmentEvaluator(settings: () => DeveloperSettings): Evaluat
     let accepted = false;
     const diagnostics: string[] = [];
     if (field === 'prediction') accepted = !!text.trim();
-    if (field === 'cl') accepted = /spin|rotat|angular|turns? (faster|slower)/.test(value);
-    if (field === 'rho') accepted = /dens|per (unit )?volume|amount of (air|fluid)|more (air|fluid|particles)|number of (air )?(lines|particles)|packed/.test(value);
-    if (field === 'v') accepted = /speed|velocity|fast|slow/.test(value) && /ball|sphere|air|fluid|translat/.test(value) && !/only spin|spin speed|rotation speed|rotational/.test(value);
-    if (field === 'area') accepted = /area|size|radius|radii|diameter|bigger|larger|smaller/.test(value);
+    if (field === 'cl') accepted = /lift coefficient|spin|rotation|angular/.test(value) || /(?:ball|sphere).*(?:rotat|turn)|(?:rotat|turn).*(?:ball|sphere)/.test(value);
+    if (field === 'rho') accepted = /^(?:the )?(?:fluid |air )?density[.!]?$/.test(value.trim()) || /(?:air|fluid|particles).*(?:dens|per (unit )?volume|same (space|volume)|packed)|(?:dens|amount|more|less|number|packed).*(?:air|fluid|particles)/.test(value);
+    if (field === 'v') accepted = /speed|velocity|fast|slow/.test(value) && /ball|sphere|air(?! (?:lines|dashes|arrows))|fluid|translat/.test(value) && !/only spin|spin speed|rotation speed|rotational/.test(value);
+    if (field === 'area') accepted = /cross.section|radius|radii|diameter/.test(value) || /^(?:the )?(?:area|size)[.!]?$/.test(value.trim()) || /(?:ball|sphere).*(?:area|size|bigger|larger|smaller)|(?:area|size|bigger|larger|smaller).*(?:ball|sphere)/.test(value);
     if (field === 'explanation') {
       const spin = /spin|rotat|turning/.test(value);
       const belt = /belt|treadmill|direction|speed/.test(value);
@@ -27,7 +27,7 @@ export function developmentEvaluator(settings: () => DeveloperSettings): Evaluat
       if (!spin || !deflection || !relation) diagnostics.push('Rotation to deflection connection not identified by development checker.');
     }
     if (!accepted && !diagnostics.length) diagnostics.push(`Development checker did not recognize the ${field} description.`);
-        const feedback = accepted ? '' : field === 'v' && /speed|velocity|fast|slow/.test(value) ? 'The speed of what exactly?' : field === 'rho' && /air|lines|particles/.test(value) ? 'What changes about how much is in the same space?' : field === 'explanation' && /spin|rotat/.test(value) ? 'You noticed the spin. Which way does the path curve compared with the treadmill?' : 'Try comparing two settings and describe the visible change more precisely.';
+        const feedback = accepted ? '' : field === 'v' && /speed|velocity|fast|slow/.test(value) ? 'The speed of what exactly?' : field === 'rho' && /air|lines|particles/.test(value) ? 'What changes about how much is in the same space?' : field === 'explanation' && /spin|rotat/.test(value) ? 'You noticed the spin. Which way does the path curve compared with the treadmill?' : 'What physical property of the ball or surrounding air does that visible change represent?';
     return { accepted, diagnostics, feedback };
   } };
 }

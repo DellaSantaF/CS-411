@@ -49,7 +49,7 @@ A terminal OPENAI_API_KEY can override the saved local key; clearing that proces
 
 | Evidence | Recorded result and limit |
 | --- | --- |
-| Automated checks | Last recorded run: 19 tests and production build passed (24 November iteration). Covers physics ranges/formula, contracts, routing, privacy, errors, request settings, caching, limits and key generation. |
+| Automated checks | Last recorded run: 20 tests and production build passed (24 November iterations). Covers physics ranges/formula, contracts, routing, privacy, errors, request settings, caching, limits and key generation. |
 | Browser | Both complete support-condition flows were previously checked with substitutes. Integration-stage formula fixtures checked reactive help/acceptance and a single proactive panel without Help controls. |
 | Live check, 17 November | Three calls passed: intuitive density accepted, explicit rotation negation rejected, Socratic reactive prompt returned. Usage: 2,581 input + 132 output tokens, including 29 reasoning tokens. |
 | User confirmation, 24 November | AI integration works. This does not establish comprehensive live grading accuracy or study readiness. |
@@ -65,3 +65,11 @@ Implementation choices beyond explicit wording: six-minute treadmill threshold (
 Validation for this iteration uses simulated providers and mocked Responses API requests; live pedagogical quality still requires the review listed in open items. No billable live regression was requested as part of this UI iteration.
 
 Browser verification (development providers, seeded task states): reactive formula introduction and help dialogs opened modally; clicks on other controls were blocked; “the spin” was accepted by Ctrl+Enter with the formal explanation preserved under Parameter 1; “the speed” remained editable with “The speed of what exactly?”; treadmill help distinguished selected 10 m/s from observed 8 m/s and requested Run again; skip was absent at 250 seconds. Proactive formula and treadmill bubbles blocked other controls and showed no Help buttons. These are targeted interaction checks, not full end-to-end or live-model validation.
+
+## Second improvement iteration — 24 November
+
+Completed parameter cards now hide the input, retain the learner wording, and show a large formal name beneath a small muted uppercase Parameter X caption. Reactive help stays visible but disabled for resolved parameters. Slider names occupy a separate row below help controls, allowing long names to wrap. Formula multiplication uses dots, masked terms use the parameter colour as their background, and subscripts sit below the baseline. Removed static rotation arrows from the formula scene.
+
+Formula evaluator rubrics now require identifying a physical property, not just describing graphical changes. Intuitive physical wording such as “the spin” and “the ball size” still counts; formal names and force relationships are not required. Development heuristics and regression examples follow this boundary. Revealed parameters receive the same completed-card layout and disabled-help treatment. Existing reviewed airflow slowdown and opacity are preserved.
+
+Second-iteration verification: all 20 tests and the production build passed. Seeded reactive browser checks confirmed hidden completed inputs, retained wording and formal headings, disabled discovered/revealed help, enabled unresolved help, rejected graphical-only density wording, removed rotation arrows, coloured hidden terms, and no slider-name/button overlap or horizontal overflow at 390 px width. Live grading was not rerun.

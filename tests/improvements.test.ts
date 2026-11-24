@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { developmentEvaluator, developmentTutor } from '../server/ai/development.ts';
 import { protectGuidance } from '../server/ai/guidance.ts';
@@ -26,7 +26,7 @@ test('hidden parameter names and units are protected, revealed parameters can be
   assert.equal(protectGuidance(hint, { ...context, outcomes: { rho: 'accepted' } }).message, hint.message);
 });
 test('airflow animation is proportional to the actual velocity', () => {
-  assert.equal(visualMapping({ ...initialParameters(), v: 12 }).airflowSpeed, 3 * visualMapping({ ...initialParameters(), v: 4 }).airflowSpeed);
+  assert.ok(Math.abs(visualMapping({ ...initialParameters(), v: 12 }).airflowSpeed / visualMapping({ ...initialParameters(), v: 4 }).airflowSpeed - 3) < 1e-12);
 });
 
 test('treadmill reveal gives fifty percent more time than formula discovery', async () => {
@@ -36,10 +36,23 @@ test('treadmill reveal gives fifty percent more time than formula discovery', as
   assert.equal(taskRevealSeconds(10, 'explanation'), 15);
 });
 
-test('airflow travels at calculation velocity relative to the displayed physical ball size', () => {
+test('airflow preserves the reviewed one-tenth visual time scale relative to physical ball size', () => {
   for (const area of [.01, .03, .05]) {
     const visual = visualMapping({ ...initialParameters(), area });
     const unitsPerMetre = visual.radius / Math.sqrt(area / Math.PI);
-    assert.equal(visual.airflowSpeed / unitsPerMetre, 8);
+    assert.ok(Math.abs(visual.airflowSpeed / unitsPerMetre - .8) < 1e-12);
+  }
+});
+
+test('formula discovery requires physical meaning beyond changes to graphics', async () => {
+  const evaluator = developmentEvaluator(settings);
+  const cases = [
+    ['cl', 'The stripes turn faster.', false], ['cl', 'the spin', true],
+    ['rho', 'There are more lines.', false], ['rho', 'The lines get denser.', false], ['rho', 'More air in the same volume.', true],
+    ['v', 'The lines move faster.', false], ['v', 'The air lines move faster.', false], ['v', 'The speed of air past the ball.', true],
+    ['area', 'The circle gets bigger.', false], ['area', 'The size of the ball.', true],
+  ] as const;
+  for (const [field, text, accepted] of cases) {
+    assert.equal((await evaluator.evaluate({ field, text, revision: 1 })).accepted, accepted, text);
   }
 });

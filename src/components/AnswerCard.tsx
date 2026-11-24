@@ -8,13 +8,14 @@ export function AnswerCard({ id, label, answer, help, allowReveal, onText, onChe
   onText(text: string): void; onCheck(): void; onReveal(): void;
 }) {
   const complete = resolved(answer), checking = answer.status === 'checking';
+  const parameter = id !== 'prediction' && id !== 'explanation' ? parameters[id] : null;
   return <div className={`answer-card ${answer.status}`} data-field={id}>
-    <div className="field-top"><label htmlFor={`answer-${id}`}>{label}</label>{complete && <span className={`outcome ${answer.status}`}>{answer.status === 'accepted' ? (id === 'explanation' || id === 'prediction' ? 'Completed' : 'Discovered') : 'Revealed'}</span>}</div>
+    <div className="field-top">{complete && parameter ? <div><span className="parameter-eyebrow">Parameter {parameter.number}</span><h3 className="discovered-name">{parameter.name}</h3></div> : <label htmlFor={`answer-${id}`}>{label}</label>}{complete && <span className={`outcome ${answer.status}`}>{answer.status === 'accepted' ? (id === 'explanation' || id === 'prediction' ? 'Completed' : 'Discovered') : 'Revealed'}</span>}</div>
     {!complete && help}
-    <textarea id={`answer-${id}`} value={answer.text} readOnly={complete} disabled={checking} maxLength={2000} rows={id === 'explanation' ? 5 : 2} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !complete && !checking && answer.text.trim()) { event.preventDefault(); onCheck(); } }} onChange={event => onText(event.target.value)} aria-describedby={answer.feedback ? `feedback-${id}` : undefined} />
+    {(!complete || !parameter) && <textarea id={`answer-${id}`} value={answer.text} readOnly={complete} disabled={checking} maxLength={2000} rows={id === 'explanation' ? 5 : 2} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !complete && !checking && answer.text.trim()) { event.preventDefault(); onCheck(); } }} onChange={event => onText(event.target.value)} aria-describedby={answer.feedback ? `feedback-${id}` : undefined} />}
     {!complete && <div className="answer-actions"><button disabled={checking || !answer.text.trim()} onClick={onCheck}>{checking ? 'Checking…' : 'Check'}</button>{allowReveal && <button className="quiet" disabled={checking} onClick={onReveal}>{id === 'explanation' ? 'Skip and view example' : 'Reveal example'}</button>}</div>}
     {answer.feedback && <p className="feedback" id={`feedback-${id}`} role="status">{answer.feedback}</p>}
-    {complete && id !== 'prediction' && id !== 'explanation' && <div className="parameter-meaning"><p>{answer.status === 'accepted' ? <>What you called it: <q>{answer.text}</q>.</> : answer.text && <>Your response: <q>{answer.text}</q>.</>}</p><p><strong>{parameters[id as ParameterId].name}.</strong> {parameters[id as ParameterId].example}</p></div>}
+    {complete && id !== 'prediction' && id !== 'explanation' && <div className="parameter-meaning"><p>{answer.status === 'accepted' ? <>What you called it: <q>{answer.text}</q>.</> : answer.text && <>Your response: <q>{answer.text}</q>.</>}</p><p>{parameters[id as ParameterId].example}</p></div>}
     {answer.example && (id === 'explanation' || id === 'prediction') && <div className="example"><span>{id === 'explanation' ? 'Example explanation' : 'Example description'}</span><p>{answer.example}</p></div>}
     {answer.status === 'accepted' && id !== 'prediction' && <span className="confetti" aria-hidden="true">{Array.from({ length: 7 }, (_, i) => <i key={i} />)}</span>}
   </div>;

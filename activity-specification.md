@@ -44,6 +44,9 @@ Use the exact magnitude formula: F_M = 0.5 * rho * C_L * A * v^2. Do not apply t
 - A required modal introduces the scene as a spinning ball moving through air before manipulation. The view follows the ball; the formula timer starts after dismissal.
 - Ctrl+Enter (and Cmd+Enter) checks the focused response. Borderline answers receive a short clarification question; bare speed requires specifying what is moving.
 - Keep Parameter 1–4 labels after completion, preserve the original wording as “What you called it”, and briefly explain the formal quantity for every discovered/revealed parameter.
+- Completed formula cards replace the input with a large formal-name heading below a muted uppercase Parameter X label; accepted wording stays visible. Reactive help is disabled for discovered/revealed sliders. Slider headings wrap below a reserved help row.
+- Formula multiplication uses dots; hidden terms have colour-filled backgrounds; formula subscripts sit below the baseline. Only the rotating ball markings indicate spin; the static curved arrows are removed.
+- Formula checks require physical meaning: spin, air/fluid density, relative ball/air velocity, or ball size/area. Describing lines, markings or circle changes alone is insufficient; formal terminology and force relationships remain unnecessary.
 - Acceptance locks that response, reveals its formal label/unit and formula term, marks Discovered and shows localized completion feedback. Other responses remain editable.
 - Count Discovered and Revealed separately. Do not require discovering exponents or force relationships.
 - Flow/pressure drawings are explanatory, not computed fluid dynamics. Spin illustrates C_L; it does not replace C_L in the formula.
