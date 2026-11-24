@@ -1,5 +1,7 @@
 # Connect the activity to OpenAI
 
+This guide describes current local operation. The user accepts live learning behavior for version one. See [the hosting plan](./hosting-plan.md) for Netlify deployment and the planned 200-call cap with exportable limit evidence; current code/examples below still use 40. No repeat pedagogical validation is required for the hosting milestone.
+
 The prototype connects the two existing AI roles using **gpt-6-luna** with
 **reasoning.effort = low**. The website sends learner input to your local Node
 server; only that server sends the request and API key to OpenAI. The browser
@@ -124,8 +126,9 @@ airflow/spin controls that the approved website does not have. That section is
 excluded and the current four controls and fixed directions are stated explicitly.
 The approved numerical physics, interface, timers and progression are preserved.
 
-Before study use, review representative learner answers and tutor interventions
-with the designer. Quizzes and durable study-data collection are still deferred.
+The user has reviewed the live experience and accepts it for the first classroom
+version; optional tuning can follow later. Quizzes and detailed data collection
+follow the hosting milestone in [the plan](./hosting-plan.md).
 The API server binds to localhost. This prototype's in-memory session limit and
 demo keys are not an account-wide spending control or a public-deployment design.
 

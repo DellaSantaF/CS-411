@@ -1,6 +1,8 @@
 # Magnus effect learning activity
 
-The first OpenAI integration prototype is implemented. Follow [OpenAI setup](./openai-setup.md) to add your key locally and run a three-call connection check. Both AI roles default to gpt-6-luna with low reasoning. The approved interface and numerical model are preserved; live teaching quality still needs review.
+The OpenAI integration prototype is implemented, and the user accepts the live learning experience for the first classroom version. Follow [OpenAI setup](./openai-setup.md) for local operation. Both AI roles default to gpt-6-luna with low reasoning. The approved interface and numerical model are preserved.
+
+Next priority: [minimal Netlify hosting for 20–30 participants](./hosting-plan.md). Use the [next-agent implementation prompt](./hosting-agent-prompt.md) for Netlify Functions, private JSON storage and a small participant-import/CSV-export interface. These features and the requested increase from 40 to 200 calls are planned, not implemented. Quizzes and detailed data follow hosting; further learning-experience tuning is optional later.
 
 ## Run locally
 

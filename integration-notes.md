@@ -1,11 +1,18 @@
 # Integration and agent handoff
 
-Updated 24 November 2026. The activity and live OpenAI integration work; the user confirms the integration. Preserve the approved baseline while applying the next requested improvements.
+Updated 24 November 2026. The activity and live OpenAI integration work. The user has validated the learning experience as sufficient for version one. Preserve the approved baseline; optional tuning follows hosting.
+
+## Current priority and agreed scope
+
+Implement [the minimal Netlify hosting plan](./hosting-plan.md), using [the next-agent prompt](./hosting-agent-prompt.md). This is a classroom experiment for 20–30 participants. Use Netlify Functions plus private site-wide Netlify Blobs, a small researcher import/CSV-export interface and concurrent sessions for different participants. Researchers randomize through explicit condition-linked keys. No SQL/Supabase setup, live Sheets integration, study/test versioning or substantial recovery system is required. Participants stay online in one tab; interrupted attempts may be excluded.
+
+The user requests a 200-call cap with exported reached-limit evidence. **Current code still uses 40**; implementation must change the default/configuration and record cap flags. Hosting, storage, admin pages and exports are not implemented by this documentation update. Quizzes and detailed data follow hosting. Historical validation caveats below describe prior evidence, not a requirement to repeat learning validation before deployment.
 
 ## Read first
 
 - [Activity specification](./activity-specification.md): current learner behavior and invariants.
 - [Open items](./open-items.md): the single list of remaining decisions/work.
+- [Hosting plan](./hosting-plan.md) and [next-session prompt](./hosting-agent-prompt.md): current implementation priority and human workflow.
 - [OpenAI setup](./openai-setup.md): local key, startup, review keys and live-check commands.
 - [Physics reference](./magnus_effect_physics_reference.md) and [motion details](./motion-review.md): scientific grounding and teaching simplifications. The motion document is historical; its statement that live AI is disabled is superseded here.
 
@@ -52,7 +59,7 @@ A terminal OPENAI_API_KEY can override the saved local key; clearing that proces
 | Automated checks | Last recorded run: 20 tests and production build passed (24 November iterations). Covers physics ranges/formula, contracts, routing, privacy, errors, request settings, caching, limits and key generation. |
 | Browser | Both complete support-condition flows were previously checked with substitutes. Integration-stage formula fixtures checked reactive help/acceptance and a single proactive panel without Help controls. |
 | Live check, 17 November | Three calls passed: intuitive density accepted, explicit rotation negation rejected, Socratic reactive prompt returned. Usage: 2,581 input + 132 output tokens, including 29 reasoning tokens. |
-| User confirmation, 24 November | AI integration works. This does not establish comprehensive live grading accuracy or study readiness. |
+| User confirmation, 24 November | AI integration and learning experience are accepted for the first classroom version. Further tuning is deferred; hosting and data work remain. |
 
 For code changes, run npm.cmd test and npm.cmd run build, then check the affected browser behavior in both conditions. npm.cmd run ai:check makes three billable calls; adding -- --full makes 12. The broader check is available but has no recorded passing run here. No new live calls or test runs were needed for this documentation-only consolidation.
 

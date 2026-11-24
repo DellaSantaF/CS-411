@@ -1,6 +1,6 @@
 # Magnus effect activity specification
 
-Updated 24 November 2026. Working prototype; the user confirms live AI integration works. The interface and simulation presentation were approved on 5 November. This document records the current behavior to preserve when making improvements.
+Updated 24 November 2026. Working prototype; the user confirms live AI integration and learning experience are sufficient for the first classroom version (20–30 participants). The interface and simulation presentation were approved on 5 November. This document records the current behavior to preserve when making improvements.
 
 Read [integration notes](./integration-notes.md) for implementation and verification, and [open items](./open-items.md) for unresolved work. New user instructions take precedence. The original source was Group_Magnus_M3.pdf (Group M, EPFL, 8 October 2026); subsequent approved changes supersede it.
 
@@ -9,6 +9,8 @@ Read [integration notes](./integration-notes.md) for implementation and verifica
 Participant key -> pre-test placeholder -> treadmill -> illustrated introduction -> formula discovery -> post-test placeholder.
 
 Navigation is learner-controlled. Acceptance never advances the activity automatically. Exactly two simulations are in scope; quiz content and study-data collection are deferred.
+
+Hosting is the next priority: see [the minimal Netlify plan](./hosting-plan.md). Preserve learning behavior while adding functions, private storage, participant management and minimum CSV exports. Detailed data and quizzes follow. Participants stay online in one tab; substantial interruption recovery and study/test versioning are out of scope. The requested 200-call cap with exportable limit evidence is planned, not yet the running default.
 
 | Step | Behavior and exit |
 | --- | --- |
