@@ -7,5 +7,5 @@
     "allowJs": true, "checkJs": false, "noEmit": true, "skipLibCheck": true,
     "noUnusedLocals": true, "noUnusedParameters": true
   },
-  "include": ["src", "server", "tests", "vite.config.ts"]
+  "include": ["src", "server", "netlify", "tests", "vite.config.ts"]
 }

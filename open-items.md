@@ -6,12 +6,12 @@ Updated 24 November 2026 after the user's scope decisions. Use with the [activit
 
 | Item | Remaining decision or work |
 | --- | --- |
-| Backend/storage | Implement Netlify Functions and private site-wide Blobs; retain local operation. Follow the [plan](./hosting-plan.md) and [next-agent prompt](./hosting-agent-prompt.md). |
-| Researcher interface | Small password-protected mapping-import, session-list and CSV-export page. |
-| Participants/concurrency | Researchers randomize using explicit condition-linked keys/IDs. Different participants must work concurrently; one tab per attempt. |
-| Call cap | Implement 200 instead of the current 40; persist/export used/allowed counts, reached-limit flag/timestamp and blocked-call events. |
-| Human setup | Document actual Netlify configuration, secrets, generation/import commands, URLs, exports and errors/usage. |
-| Verification | Existing tests/build and focused hosted checks of conditions, cross-instance state, concurrent participants and protected exports. No repeated learning-validation gate. |
+| Backend/storage | Implemented: shared local/function logic, private site-wide Blobs for hosted authentication, histories, counters and unique event records; committed build/runtime/routing and bundled physics reference. Deploy to the existing site. |
+| Researcher interface | Implemented: `/admin` with memory-only password entry, hashed mapping import, session list and safe CSV downloads. Set server-only `ADMIN_SECRET` and import pilot mapping. |
+| Participants/concurrency | Implemented: explicit-condition generator, distinct participant/attempt IDs and one per-tab queue for all session writes. Strong reads do not make updates atomic; duplicate tabs are unsupported. Verify overlapping hosted participants. |
+| Call cap | Implemented: 200 default/shareable allowance, persistent pre-call reservations, last-allowance flag/timestamp and blocked events. Human must change any existing private local 40-call override; it was not read/edited. |
+| Human setup | Follow the [deployment/operation guide](./hosting-guide.md): sign in, select existing site, connect/deploy this branch, enter server secrets/runtime settings, import mapping, inspect exports/logs/usage. |
+| Verification | Existing tests/build pass; local Blobs emulator covers fresh instances and overlapping isolated sessions, mocked small caps and safe exports. Dashboard is at login: hosted live overlap/reference/routing/duration/usage checks remain unverified. No repeated learning-validation gate. |
 
 ## After hosting works
 
@@ -23,6 +23,6 @@ Updated 24 November 2026 after the user's scope decisions. Use with the [activit
 
 ## Handoff boundary
 
-Keep Netlify and aim for free hosting; live AI remains billable. No SQL/Supabase administration, live Google Sheets connection, automatic randomization, study/test versioning or substantial reconnection/failure framework. Participants remain online in one tab; interrupted attempts may be excluded manually. Re-entering a key may create another session under the same participant ID. Freeze the activity before distributing real participant keys. Hosting/storage/admin/export features and the 200-call cap are planned, not yet implemented by this documentation update.
+Keep Netlify and aim for free hosting; live AI remains billable. No SQL/Supabase administration, live Google Sheets connection, automatic randomization, study/test versioning or substantial reconnection/failure framework. Participants remain online in one tab; interrupted attempts may be excluded manually. Re-entering a key may create another session under the same participant ID. Freeze the activity before distributing real participant keys. Hosting/storage/admin/export features and the 200-call cap are implemented in code. Deployment and the hosted pilot remain pending account access and human secret entry; no observed deployment is claimed.
 
 API access, model choice, live activation, interface approval, control ranges, six-minute treadmill/four-minute formula skip timing and the Balanced default are already in place. No additional interface-polish checkpoint is pending. Change these only when a new user requirement calls for it.

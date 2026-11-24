@@ -1,6 +1,6 @@
 # Minimal Netlify hosting plan
 
-Agreed scope: 24 November 2026. This is a plan, not an implemented deployment. Use [the next-agent prompt](./hosting-agent-prompt.md) to start implementation.
+Agreed scope: 24 November 2026. This is the implementation scope/acceptance reference. The first hosting milestone is now implemented in code/configuration; deployment remains pending account access. Follow the [deployment guide](./hosting-guide.md) for current operation. Descriptions of prior implementation below are the planning baseline, not current feature status.
 
 ## Purpose and scope
 
@@ -151,4 +151,4 @@ These are targeted hosting checks, not a new pedagogical-validation gate or comp
 
 [server/index.ts](./server/index.ts) currently uses memory-only sessions/history/counters and a local mapping file; [src/state.ts](./src/state.ts) uses tab session storage; [src/api.ts](./src/api.ts) makes same-origin requests. [src/App.tsx](./src/App.tsx) clears saved progress on any initial session-fetch failure. Avoid that destructive clearing on a transient error if a small change suffices; no broader resume system.
 
-This session changes documentation only: no deployed functions, storage, admin pages, exports or increased running cap. Tests/build were not rerun for these docs. Historical evidence is in [integration notes](./integration-notes.md).
+Implementation update: shared handlers, Netlify configuration, private site-wide Blobs, protected admin import/list/exports, tab queue and the 200-call default are now implemented. Local tests/build have been run, including fresh-instance Blobs emulator tests. Production deployment/hosted overlap remains pending; see the [guide](./hosting-guide.md) and [integration notes](./integration-notes.md).

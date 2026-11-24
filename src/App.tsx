@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { api } from './api.ts';
+import { api, ApiError } from './api.ts';
 import { fields, targetField } from './shared/contracts.ts';
 import type { Answer, EvaluationReply, FieldId, HelpTarget, LearnerContext, SessionInfo, Stage, TutorMessage } from './shared/contracts.ts';
 import { activityStorage, addInteraction, explanationExample, initialState, resolved, restoredState, taskKey, taskRevealSeconds, tokenStorage } from './state.ts';
@@ -21,6 +21,7 @@ export function App() {
   const [loading, setLoading] = useState(true), [key, setKey] = useState(''), [entryError, setEntryError] = useState('');
   const [entering, setEntering] = useState(false), [ready, setReady] = useState(false), [motionBusy, setMotionBusy] = useState(false);
   const [tutorBusy, setTutorBusy] = useState<HelpTarget | null>(null), [tutorError, setTutorError] = useState<HelpTarget | null>(null);
+  const [serviceError, setServiceError] = useState('');
 
   const player = useRef<TreadmillPlayer>(null), latest = useRef(state); latest.current = state;
   const tutorPending = useRef(false), lastAssessment = useRef(Date.now()), lastFingerprint = useRef('');
@@ -29,11 +30,20 @@ export function App() {
   const activeTask = state ? taskKey(state) : null;
   useEffect(() => {
     if (!sessionStorage.getItem(tokenStorage)) { setLoading(false); return; }
-    void api<SessionInfo>('session').then(info => { setSession(info); setState(restoredState(info)); }).catch(() => {
-      sessionStorage.removeItem(tokenStorage); sessionStorage.removeItem(activityStorage);
+    void api<SessionInfo>('session').then(info => { setSession(info); setState(restoredState(info)); }).catch(error => {
+      if (error instanceof ApiError && error.status === 401) { sessionStorage.removeItem(tokenStorage); sessionStorage.removeItem(activityStorage); }
+      setEntryError('Your saved attempt could not be opened. Reload to try loading it again, or contact the researcher.');
     }).finally(() => setLoading(false));
   }, []);
   useEffect(() => { if (state) sessionStorage.setItem(activityStorage, JSON.stringify(state)); }, [state]);
+  useEffect(() => {
+    const onError = (event: Event) => setServiceError((event as CustomEvent<string>).detail);
+    window.addEventListener('activity-error', onError);
+    return () => window.removeEventListener('activity-error', onError);
+  }, []);
+  useEffect(() => {
+    if (session && state && !developer) void api('record', { stage: state.stage }).catch(error => setServiceError((error as Error).message));
+  }, [session?.sessionId, state?.stage, developer]);
   useEffect(() => {
     if (state?.stage === 'treadmill' && state.phase === 'prediction' && !motionBusy) {
       document.querySelector<HTMLButtonElement>('.prediction-choices button:not(:disabled)')?.focus({ preventScroll: true });
@@ -107,7 +117,7 @@ export function App() {
     setEntering(true); setEntryError('');
     try {
       const result = await api<{ token: string; session: SessionInfo }>('session', { key });
-      sessionStorage.setItem(tokenStorage, result.token); setSession(result.session); setState(initialState(result.session));
+      sessionStorage.setItem(tokenStorage, result.token); setSession(result.session); setState(initialState(result.session)); setServiceError('');
     } catch (error) { setEntryError((error as Error).message); }
     finally { setEntering(false); }
   }
@@ -127,7 +137,7 @@ export function App() {
           answers: { ...value.answers, [id]: { ...value.answers[id], status: result.accepted ? 'accepted' : 'editable', checks: value.answers[id].checks + 1,
             feedback: result.accepted ? (id === 'prediction' ? 'Prediction recorded.' : '') : result.feedback || 'Describe what you observed a little more precisely.' } } };
       });
-    } catch { updateAnswer(id, { status: 'editable', feedback: 'Checking could not be completed. Your response is saved; please try again.' }); }
+    } catch (error) { updateAnswer(id, { status: 'editable', feedback: (error as Error).message }); }
     finally { checking.current.delete(id); }
   }
   function reveal(id: FieldId) {
@@ -162,6 +172,7 @@ export function App() {
     <div className="development-notice">{session?.aiMode === 'live' ? 'AI prototype · evaluator and tutor use OpenAI' : session ? 'Development demonstration · evaluator and tutor responses are simulated' : 'Learning activity prototype'}</div>
     <main><header><span className="brand">Learning activity</span><span className="stage-label">{stageLabel}</span></header>
       <div className="progress" role="progressbar" aria-label="Activity progress" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /></div>
+      {serviceError && <p className="feedback" role="alert">{serviceError}</p>}
       {loading ? <p role="status">Loading session…</p> : developer ? <Developer session={session} /> : !session || !state ? <section className="entry card"><h1>Participant entry</h1><form onSubmit={event => { event.preventDefault(); void enter(); }}><p>Enter the participant key provided for your session.</p><label htmlFor="participant-key">Participant key</label><input id="participant-key" value={key} autoComplete="off" autoCapitalize="characters" onChange={event => setKey(event.target.value)} disabled={entering} /><button disabled={!key.trim() || entering}>{entering ? 'Opening session…' : 'Start activity'}</button>{entryError && <p className="feedback" role="alert">{entryError}</p>}</form></section> : <>
         <h1 tabIndex={-1}>{state.stage === 'treadmill' ? 'Treadmill exploration' : state.stage === 'formula' ? 'Magnus Force Formula' : stageLabel}</h1>
         {state.stage === 'pretest' && <section className="card placeholder"><h2>Pre-test placeholder</h2><p>The pre-test will be provided here before the activity. No test questions are included in this development version.</p><button className="flow-action" onClick={() => go('treadmill')}>Continue to activity</button></section>}

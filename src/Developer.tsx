@@ -17,7 +17,7 @@ export function Developer({ session }: { session: SessionInfo | null }) {
   return <section className="developer-panel"><h1>Developer controls</h1><p>{session?.aiMode === 'live' ? 'Live OpenAI prototype. Checks and guidance use the API. Simulated outcomes are disabled; thinking allowance and skip timing remain adjustable.' : 'Separate from the learner interface. All evaluator and tutor outcomes here are development substitutes; no live AI calls are made.'}</p>
     <a href="/">Return to activity</a>
     {!session && <div className="card"><p>First enter a participant key in the activity, then open this page in the same tab.</p><p>Review keys: <code>DEMO-R7K2</code> (reactive), <code>DEMO-P9M4</code> (proactive).</p></div>}
-    {session && <div className="session-details"><p>Condition: <strong>{session.condition}</strong></p><p>Participant ID: <code>{session.participantId}</code></p><p>Session ID: <code>{session.sessionId}</code></p><p>Key reuse is allowed for development. Study-data storage is not implemented.</p></div>}
+    {session && <div className="session-details"><p>Condition: <strong>{session.condition}</strong></p><p>Participant ID: <code>{session.participantId}</code></p><p>Session ID: <code>{session.sessionId}</code></p><p>Key re-entry creates another attempt. Local records are kept in memory; hosted records use private Blobs.</p></div>}
     {error && <p role="alert">{error}</p>}
     {details && <><form className="card developer-form" onSubmit={event => { event.preventDefault(); void save(); }}><h2>Development settings</h2>
       <label>Base skip threshold (seconds; treadmill ×1.5)<input type="number" min="1" max="3600" value={details.settings.skipSeconds} onChange={e => change({ skipSeconds: Number(e.target.value) })} /></label>

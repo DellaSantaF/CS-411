@@ -1,6 +1,6 @@
 # Connect the activity to OpenAI
 
-This guide describes current local operation. The user accepts live learning behavior for version one. See [the hosting plan](./hosting-plan.md) for Netlify deployment and the planned 200-call cap with exportable limit evidence; current code/examples below still use 40. No repeat pedagogical validation is required for the hosting milestone.
+This guide describes local OpenAI operation. For implemented Netlify hosting, production secrets, mapping imports and CSV exports, follow the [deployment guide](./hosting-guide.md). The default is now 200 attempted live calls per session, with durable hosted reservations and reached-limit evidence. The private local `.env` was not read or changed: change any existing 40-call override to 200 yourself and restart. The user accepts live learning behavior for version one.
 
 The prototype connects the two existing AI roles using **gpt-6-luna** with
 **reasoning.effort = low**. The website sends learner input to your local Node
@@ -16,7 +16,7 @@ has been prepared. Add your key after `OPENAI_API_KEY=` and save:
 AI_MODE=live
 OPENAI_API_KEY=your-key-here
 OPENAI_MODEL=gpt-6-luna
-OPENAI_MAX_CALLS_PER_SESSION=40
+OPENAI_MAX_CALLS_PER_SESSION=200
 PORT=3001
 ```
 
@@ -105,13 +105,12 @@ free substitutes instead.
 - Identical repeated checks reuse the recent server-side answer result. Proactive
   requests remain at most once per 45 seconds and pause for hidden tabs or an
   open hint. The LLM decides when assistance is appropriate.
-- The server permits at most **40 attempted AI calls per session**, including
+- The server permits at most **200 attempted AI calls per session**, including
   failures and proactive wait results. This is a request cap, not a money limit:
-  input length and actual model usage affect cost. New sessions/server restarts
-  reset this in-memory limit. The standalone check script has its own fixed
+  input length and actual model usage affect cost. New key entries create a fresh session allowance. Local Node restarts reset memory-only records; hosted Blobs reservations survive function restarts and redeploys. The standalone check script has its own fixed
   three/12-call scope and is outside the session cap.
 - The terminal logs counts only: input, output, and reasoning (a subset of output;
-  do not add it again). Developer API details expose used/allowed request counts.
+  do not add it again). Local developer API details expose used/allowed counts; hosted `/admin` exports used/allowed counts, limit flags/timestamps and blocked events. The last reservation sets the flag immediately. Cached checks and local untouched-slider prompts are free. A limit message is distinct from learning feedback; ambiguous errors stop queued writes rather than retrying provider calls.
 
 Start with reactive support when testing cheaply: requests occur only on Check
 or Help. Lowering output caps too far can leave no tokens for the required JSON;
@@ -129,8 +128,7 @@ The approved numerical physics, interface, timers and progression are preserved.
 The user has reviewed the live experience and accepts it for the first classroom
 version; optional tuning can follow later. Quizzes and detailed data collection
 follow the hosting milestone in [the plan](./hosting-plan.md).
-The API server binds to localhost. This prototype's in-memory session limit and
-demo keys are not an account-wide spending control or a public-deployment design.
+The ordinary local API binds to localhost and uses memory-only storage. Hosted functions use private site-wide Blobs and disable demo keys/developer endpoints. The per-session cap is not an account-wide spending control. Production still requires the human setup and hosted checks in the [deployment guide](./hosting-guide.md).
 
 ## Official references
 

@@ -2,7 +2,7 @@
 
 The OpenAI integration prototype is implemented, and the user accepts the live learning experience for the first classroom version. Follow [OpenAI setup](./openai-setup.md) for local operation. Both AI roles default to gpt-6-luna with low reasoning. The approved interface and numerical model are preserved.
 
-Next priority: [minimal Netlify hosting for 20–30 participants](./hosting-plan.md). Use the [next-agent implementation prompt](./hosting-agent-prompt.md) for Netlify Functions, private JSON storage and a small participant-import/CSV-export interface. These features and the requested increase from 40 to 200 calls are planned, not implemented. Quizzes and detailed data follow hosting; further learning-experience tuning is optional later.
+Netlify Functions, private site-wide Blobs, a protected `/admin` mapping-import/session-list/CSV-export page and a persistent 200-call allowance are implemented for 20–30 participants. Follow the [deployment and operation guide](./hosting-guide.md). The existing site still needs account access, production secrets, a Git deployment, mapping import and overlapping hosted pilot checks; no deployment is claimed. Quizzes and detailed data follow hosting.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ Open **http://127.0.0.1:5173/**. The API runs locally on port 3001. Without a lo
 | `DEMO-R7K2` | Reactive: AI Help beside each simulation control |
 | `DEMO-P9M4` | Proactive: no learner-requested help controls |
 
-These keys are for development only. The session receives a random ID on entry. Progress is kept in the current tab's session storage so refreshing preserves it. The API's session and tutor context are in memory; restarting the API requires key entry again. This is not durable study-data recording.
+These keys are for local development only; hosted demo/developer access is disabled. Each key entry creates a new session/attempt ID under the same participant ID. Progress stays in the current tab. Local Node development keeps server records in memory and loses them on restart; hosted functions persist authentication, tutor context, counters and minimum records in private Blobs. Use one tab per attempt.
 
 For a production-style local preview:
 
@@ -63,24 +63,25 @@ npm.cmd run keys -- --condition reactive --count 10
 npm.cmd run keys -- --condition proactive --count 10
 ```
 
-This creates or appends to the private, ignored server mapping `participants.local.json` and writes a private `participant-keys-*.csv` handout list. Give each participant only their key. The mapping stores a hash of each key, a random participant ID, and its assigned condition; raw keys are in the handout CSV. Restart the API to load new mappings. Reusing a key currently creates a new session for the same participant and condition; the study's reuse rule is pending.
+This creates or appends to the private, ignored server mapping `participants.local.json` and writes a private `participant-keys-*.csv` handout list. Give each participant only their key. The mapping stores a hash of each key, a random participant ID, and its assigned condition; raw keys are in the handout CSV. For local Node development, restart the API to load new mappings. For hosting, upload the hashed mapping at `/admin`; no restart is needed. Key re-entry creates another attempt for the same participant/condition; researchers exclude duplicates by session ID.
 
-Set `DEVELOPER_TOOLS=0` in an ignored `.env` file to disable developer endpoints and the demo keys, then restart the server. Generated participant keys continue working. Durable data collection and review of live-model teaching behavior remain necessary before study use.
+Set `DEVELOPER_TOOLS=0` in an ignored `.env` file to disable developer endpoints and the demo keys, then restart the server. Generated participant keys continue working. Hosted functions persist minimum records; download them through `/admin`. The user has accepted the version-one learning experience. Complete the hosted pilot/setup in the [guide](./hosting-guide.md) before distributing real keys.
 
 ## Verify
 
 ```powershell
 npm.cmd test
 npm.cmd run build
+npm.cmd run hosting:check
 ```
 
-Tests cover the approved motion port, all treadmill speed/direction ranges, formula extremes and visual mappings, API condition boundaries, private diagnostics, technical-failure handling, live provider routing, request settings, cost limits and technical failures, and key generation. Both full support-condition flows were also checked in the browser, including timer pause, answer locking, independent checks, help/wait, and discovered/revealed counters. See [verification and review notes](./integration-notes.md).
+Tests cover the approved physics and learning contracts, plus fresh-function Blobs authentication/history isolation, overlapping participants, protected imports/exports, queued writes and small mocked caps. `hosting:check` packages the actual function, verifies the exact physics reference and absence of private files, then exercises live initialization and Blobs with external provider calls blocked. TypeScript is pinned to 6 for Netlify packaging compatibility. See [verification and review notes](./integration-notes.md).
 
 ## Main files
 
 - [Activity controller](./src/App.tsx), [state](./src/state.ts), and [shared contracts](./src/shared/contracts.ts).
 - [Treadmill component](./src/components/Treadmill.tsx) and [approved numerical model](./src/physics/treadmill.js).
 - [Formula scene](./src/components/FormulaScene.tsx) and [formula configuration](./src/physics/formula.ts).
-- [Server](./server/index.ts), [development substitutes](./server/ai/development.ts), and [OpenAI adapters](./server/ai/openai.ts).
+- [Local server](./server/index.ts), [shared request logic](./server/activity.ts), [storage](./server/storage.ts), [Netlify function](./netlify/functions/api.ts), [development substitutes](./server/ai/development.ts), and [OpenAI adapters](./server/ai/openai.ts).
 
 The [original layout preview](./design-proposal.html) and [standalone treadmill](./prototype/treadmill.html) remain as review references. Use the local application above for the complete flow.

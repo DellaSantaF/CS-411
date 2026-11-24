@@ -10,7 +10,7 @@ Participant key -> pre-test placeholder -> treadmill -> illustrated introduction
 
 Navigation is learner-controlled. Acceptance never advances the activity automatically. Exactly two simulations are in scope; quiz content and study-data collection are deferred.
 
-Hosting is the next priority: see [the minimal Netlify plan](./hosting-plan.md). Preserve learning behavior while adding functions, private storage, participant management and minimum CSV exports. Detailed data and quizzes follow. Participants stay online in one tab; substantial interruption recovery and study/test versioning are out of scope. The requested 200-call cap with exportable limit evidence is planned, not yet the running default.
+Hosting is the next priority: see [the minimal Netlify plan](./hosting-plan.md). Preserve learning behavior while adding functions, private storage, participant management and minimum CSV exports. Detailed data and quizzes follow. Participants stay online in one tab; substantial interruption recovery and study/test versioning are out of scope. The default/shareable cap is now 200 attempted live calls with persisted hosted reservations and exported limit evidence. Hosting code is implemented; deployment/account setup remains in the [guide](./hosting-guide.md).
 
 | Step | Behavior and exit |
 | --- | --- |

@@ -4,9 +4,9 @@ Updated 24 November 2026. The activity and live OpenAI integration work. The use
 
 ## Current priority and agreed scope
 
-Implement [the minimal Netlify hosting plan](./hosting-plan.md), using [the next-agent prompt](./hosting-agent-prompt.md). This is a classroom experiment for 20–30 participants. Use Netlify Functions plus private site-wide Netlify Blobs, a small researcher import/CSV-export interface and concurrent sessions for different participants. Researchers randomize through explicit condition-linked keys. No SQL/Supabase setup, live Sheets integration, study/test versioning or substantial recovery system is required. Participants stay online in one tab; interrupted attempts may be excluded.
+The first [Netlify hosting milestone](./hosting-plan.md) is implemented in code/configuration. Follow the [deployment guide](./hosting-guide.md) for remaining human setup. This is a classroom experiment for 20–30 participants. Use Netlify Functions plus private site-wide Netlify Blobs, a small researcher import/CSV-export interface and concurrent sessions for different participants. Researchers randomize through explicit condition-linked keys. No SQL/Supabase setup, live Sheets integration, study/test versioning or substantial recovery system is required. Participants stay online in one tab; interrupted attempts may be excluded.
 
-The user requests a 200-call cap with exported reached-limit evidence. **Current code still uses 40**; implementation must change the default/configuration and record cap flags. Hosting, storage, admin pages and exports are not implemented by this documentation update. Quizzes and detailed data follow hosting. Historical validation caveats below describe prior evidence, not a requirement to repeat learning validation before deployment.
+The default/shareable cap is now **200 attempted live calls** with reservations before calls and exported reached-limit evidence at the last allowance. Functions, private site-wide Blobs, `/admin` and CSV exports are implemented. The private local `.env` was not read/changed; the human must update any existing 40-call override. The Netlify dashboard showed a login screen, so deployment, runtime secrets and hosted overlap checks are still pending; no deployed site is claimed. Quizzes and detailed data follow hosting. Historical validation caveats below describe prior evidence, not a requirement to repeat learning validation before deployment.
 
 ## Read first
 
@@ -22,7 +22,7 @@ The user requests a 200-call cap with exported reached-limit evidence. **Current
 | --- | --- |
 | Flow, drafts, timers, reveals and navigation | [Controller](./src/App.tsx), [state](./src/state.ts) |
 | Shared request/result types and control targets | [Shared contracts](./src/shared/contracts.ts) |
-| Authentication, conditions, private history and request limits | [Server](./server/index.ts) |
+| Authentication, conditions, private history and request limits | [Shared handler](./server/activity.ts), [local server](./server/index.ts), [Blobs adapter](./server/storage.ts) |
 | Explicit live/development selection | [Provider routing](./server/ai/providers.ts) |
 | Responses API, structured outputs, validation and usage counts | [OpenAI adapters](./server/ai/openai.ts) |
 | Separate evaluator/tutor interfaces and semantic rubrics | [AI contracts](./server/ai/contracts.ts) |
@@ -41,12 +41,12 @@ The reference is read at startup. Its older force-view section describes separat
 - Requests use store=false, a 30-second timeout and zero automatic retries. No tools or full transcript are sent.
 - Tutor context: current task drafts/outcomes, eight recent interactions, four relevant checks, three prior hints, timing and thinking allowance.
 - Proactive scheduling: at most once per 45 seconds, changed context only; paused for hidden tabs and open guidance/requests. The server also enforces the interval.
-- Recent identical checks reuse their result. Default session cap: 40 attempted live calls, including failed calls and wait decisions. It is in memory, resets with new sessions, and is not an account-wide money limit.
+- Recent identical checks reuse their result. Default session cap: 200 attempted live calls, including failed calls and model wait decisions. Reservations and reached-limit flags persist in hosted Blobs before provider calls. Local throttles/cached checks/untouched-slider prompts are free. New key entries create new attempts; this is not an account-wide money limit.
 - Terminal logs contain token counts, not credentials or learner text. API keys and participant mapping/handout files are ignored by Git and blocked by the development file server.
 
 ## Sessions and review tools
 
-Participant keys assign condition server-side. Generated keys map to a stable participant ID; each entry creates a new session ID. Progress persists in tab session storage; server sessions, checks and guidance are memory-only. Restarting the API requires key entry again.
+Participant keys assign condition server-side. Generated keys map to a stable participant ID; each entry creates a new session ID. Progress persists in tab session storage. Hosted server authentication uses a bearer-token hash lookup in private Blobs; sessions, settings, checks, guidance, throttle time and counters survive fresh functions. Ordinary local Node development remains memory-only. Different participants use separate records. Every tab mutation (checks, tutor, stage recording and local developer changes) uses one queue; strong reads are not atomic, and duplicate tabs for an attempt are unsupported. Unique event keys prevent shared append races. Persistence/ambiguous failures stop the attempt rather than replaying billable work. GET reads do not mutate sessions.
 
 The separate /developer page provides timing controls, private diagnostics and review shortcuts. Forced accept/reject/help/wait/error outcomes apply only in development mode. DEVELOPER_TOOLS=0 disables developer routes and demo keys.
 
@@ -80,3 +80,15 @@ Completed parameter cards now hide the input, retain the learner wording, and sh
 Formula evaluator rubrics now require identifying a physical property, not just describing graphical changes. Intuitive physical wording such as “the spin” and “the ball size” still counts; formal names and force relationships are not required. Development heuristics and regression examples follow this boundary. Revealed parameters receive the same completed-card layout and disabled-help treatment. Existing reviewed airflow slowdown and opacity are preserved.
 
 Second-iteration verification: all 20 tests and the production build passed. Seeded reactive browser checks confirmed hidden completed inputs, retained wording and formal headings, disabled discovered/revealed help, enabled unresolved help, rejected graphical-only density wording, removed rotation arrows, coloured hidden terms, and no slider-name/button overlap or horizontal overflow at 390 px width. Live grading was not rerun.
+
+## Hosting implementation and verification — 24 November
+
+[Shared request logic](./server/activity.ts) now serves both the local Node entry point and the [Netlify function](./netlify/functions/api.ts). [Configuration](./netlify.toml) defines Node 24, build/publish/functions/routing and the bundled physics reference. Hosted developer tools/demo keys are unconditionally disabled. The [admin page](./src/Admin.tsx) keeps the researcher secret only in memory and sends it in an authorization header. Imports validate hashed mappings and reject changed assignments. Sessions and unique events export through CSV with quoting and formula neutralization; event downloads collect one session per request. There are no SQL/Sheets integrations or shared writable dataset files.
+
+Local verification: **27 tests passed**, including the original 20 and seven hosting tests. The actual Blobs SDK runs against its local emulator with fresh handlers per request, overlapping reactive/proactive participants, authentication and private history isolation, immutable imports, admin authorization, small mocked caps, failed provider calls, failed reservation/result writes, queued mutations and CSV escaping. Production build and `npm run hosting:check` pass. The latter packages the real v2 function, checks exact reference inclusion/private-file exclusion, and initializes live providers plus Blobs from the packaged directory with external requests blocked. TypeScript 6 is pinned because the Netlify packaging parser failed with TypeScript 7's native API. No billable calls were made.
+
+Targeted browser checks with substitutes: reactive entry/treadmill and stage recording; proactive formula without Help controls; two rapid independent checks both discovered their parameters; a mocked transient initial session-read failure preserved drafts/discoveries across reload; a mocked cap response displayed the distinct limit message without adding a failed check. The local admin session list showed IDs, condition, stage and 0/200 usage. These checks preserve the accepted learning baseline, not a fresh pedagogy review.
+
+Runtime dependency audit (`npm audit --omit=dev`) reports zero vulnerabilities. The development-only Netlify packaging validator currently brings six moderate transitive advisories; review its future updates separately from the classroom runtime.
+
+Human setup remains: authenticated access to the existing Netlify site, connect/deploy this branch, enter server-only secrets/runtime settings, import pilot mappings, and verify overlapping hosted sessions, bundled reference loading, production routes, exports and account usage. The dashboard was observed at login; no actual deployment or hosted live checks were observed. Prior learning validation remains accepted. Detailed analytics, quizzes and optional tuning are deferred.

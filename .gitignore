@@ -8,3 +8,4 @@ participant-keys*.csv
 playwright-report/
 test-results/
 *.log
+.netlify/

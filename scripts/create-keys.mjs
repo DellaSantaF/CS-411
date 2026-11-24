@@ -19,4 +19,4 @@ for (let i = 0; i < count; i++) {
 await writeFile('participants.local.json', JSON.stringify(mapping, null, 2));
 const output = `participant-keys-${condition}-${Date.now()}.csv`;
 await writeFile(output, rows.join('\n') + '\n');
-console.log(`Created ${count} keys in ${output}. Keep this private. Restart the API server to load the updated mapping.`);
+console.log(`Created ${count} keys in ${output}. Keep this private. Hosted: import participants.local.json at /admin. Local: restart the API server to load the updated mapping.`);
