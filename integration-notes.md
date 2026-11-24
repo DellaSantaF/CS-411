@@ -23,7 +23,7 @@ Updated 24 November 2026. The activity and live OpenAI integration work; the use
 
 AI_MODE=live activates the official SDK adapters; missing credentials fail startup. Without an explicit mode, development substitutes are used. Live mode never mixes in forced simulated outcomes; developer timing controls remain usable. The learner banner reflects the session's provider mode.
 
-Evaluator replies expose acceptance, revision and mode only. Diagnostics and checked-answer history stay server-side and enter relevant tutor context. Guidance returns help/wait, target and message; it does not control progression. Treadmill context distinguishes selected settings from the observed run.
+Evaluator replies expose acceptance, short learner-facing clarification feedback, revision and mode; private diagnostics remain separate. Diagnostics and checked-answer history stay server-side and enter relevant tutor context. Guidance returns help/wait, target and message; it does not control progression. Treadmill context distinguishes selected settings from the observed run.
 
 The reference is read at startup. Its older force-view section describes separate ball/airflow/spin controls absent from this website; excerpt selection excludes that section and states the actual four-control scene. Do not silently add those older controls.
 
@@ -49,9 +49,19 @@ A terminal OPENAI_API_KEY can override the saved local key; clearing that proces
 
 | Evidence | Recorded result and limit |
 | --- | --- |
-| Automated checks | Last recorded run: 13 tests and production build passed. Covers physics ranges/formula, contracts, routing, privacy, errors, request settings, caching, limits and key generation. |
+| Automated checks | Last recorded run: 19 tests and production build passed (24 November iteration). Covers physics ranges/formula, contracts, routing, privacy, errors, request settings, caching, limits and key generation. |
 | Browser | Both complete support-condition flows were previously checked with substitutes. Integration-stage formula fixtures checked reactive help/acceptance and a single proactive panel without Help controls. |
 | Live check, 17 November | Three calls passed: intuitive density accepted, explicit rotation negation rejected, Socratic reactive prompt returned. Usage: 2,581 input + 132 output tokens, including 29 reasoning tokens. |
 | User confirmation, 24 November | AI integration works. This does not establish comprehensive live grading accuracy or study readiness. |
 
 For code changes, run npm.cmd test and npm.cmd run build, then check the affected browser behavior in both conditions. npm.cmd run ai:check makes three billable calls; adding -- --full makes 12. The broader check is available but has no recorded passing run here. No new live calls or test runs were needed for this documentation-only consolidation.
+
+## First improvement iteration — 24 November
+
+Implemented the prototype feedback: relaxed treadmill Task 2 rubric; current selected versus observed speed guidance; longer treadmill skip delay; modal control-linked help bubbles and cross buttons; compact gradient question-mark help controls; larger formula; mandatory moving-through-air introduction; faster velocity-proportional airflow; explanations of all formal slider quantities while preserving accepted learner wording; contextual clarification on rejected checks; Ctrl/Cmd+Enter checking; persistent slider-use context; untouched-slider observation prompts; and hidden-name/unit protection.
+
+Implementation choices beyond explicit wording: six-minute treadmill threshold (1.5× the configurable base), airflow scale derived from the displayed radius and physical cross-sectional area, native modal dialogs with focus containment and Escape dismissal, viewport-aware pointers, and a server-side fallback for obvious answer leaks. Pending hints are discarded after settings/run changes to prevent stale advice.
+
+Validation for this iteration uses simulated providers and mocked Responses API requests; live pedagogical quality still requires the review listed in open items. No billable live regression was requested as part of this UI iteration.
+
+Browser verification (development providers, seeded task states): reactive formula introduction and help dialogs opened modally; clicks on other controls were blocked; “the spin” was accepted by Ctrl+Enter with the formal explanation preserved under Parameter 1; “the speed” remained editable with “The speed of what exactly?”; treadmill help distinguished selected 10 m/s from observed 8 m/s and requested Run again; skip was absent at 250 seconds. Proactive formula and treadmill bubbles blocked other controls and showed no Help buttons. These are targeted interaction checks, not full end-to-end or live-model validation.

@@ -12,9 +12,9 @@ export function FormulaScene({ values }: { values: ParameterValues }) {
       previous = document.hidden ? null : time;
       const mapping = visualMapping(latest.current);
       angle = (angle - delta * mapping.angularSpeed * 180 / Math.PI) % 360;
-      offset = (offset + delta * mapping.airflowSpeed) % 54;
+      offset = (offset + delta * mapping.airflowSpeed) % 290;
       svg.current?.querySelector('[data-sphere]')?.setAttribute('transform', `rotate(${angle})`);
-      svg.current?.querySelectorAll('[data-airflow] path').forEach((path, index) => path.setAttribute('stroke-dashoffset', String(offset + index * 17.3 % 54)));
+      svg.current?.querySelectorAll('[data-airflow] path').forEach((path, index) => path.setAttribute('stroke-dashoffset', String(offset + index * 67.3 % 290)));
       id = requestAnimationFrame(frame);
     }
     id = requestAnimationFrame(frame); return () => cancelAnimationFrame(id);
@@ -30,7 +30,7 @@ export function FormulaScene({ values }: { values: ParameterValues }) {
     <rect width="760" height="330" fill="#f7f9f7" />
     <ellipse data-pressure="low" cx={cx} cy={cy-r-12} rx={r+26} ry="21" fill="#8eb8d4" opacity=".28" />
     <ellipse data-pressure="high" cx={cx} cy={cy+r+12} rx={r+26} ry="21" fill="#ddb080" opacity=".30" />
-    <g data-airflow="" stroke="#6e95aa" strokeOpacity=".85" strokeWidth="2" fill="none" strokeDasharray="29 25">{paths.map((path, i) => <path key={i} d={path} strokeDashoffset={i * 17.3 % 54} />)}</g>
+    <g data-airflow="" stroke="#6e95aa" strokeOpacity=".5" strokeWidth="2" fill="none" strokeDasharray="90 200">{paths.map((path, i) => <path key={i} d={path} strokeDashoffset={i * 67.3 % 290} />)}</g>
     <g transform={`translate(${cx} ${cy})`}><g data-sphere=""><circle r={r} fill="#c5ca74" stroke="#858b48" strokeWidth="1.5" /><path d={`M${-r*.85} ${-r*.5}Q0 ${r*.5} ${r*.85} ${-r*.5}M${-r*.85} ${r*.5}Q0 ${-r*.5} ${r*.85} ${r*.5}`} fill="none" stroke="#f8f8dc" strokeWidth="2.5" /><circle cx={r*.5} cy={-r*.4} r="3" fill="#777e3a" /></g>
       <g fill="none" stroke="#64745a" strokeWidth="1.5" markerEnd="url(#rotation-head)"><path d={`M0 ${-r-10}A${r+10} ${r+10} 0 0 0 ${-r-10} 0`} /><path d={`M0 ${r+10}A${r+10} ${r+10} 0 0 0 ${r+10} 0`} /></g></g>
     <path data-force="" d={`M${cx} ${cy}V${cy-visual.forceLength}`} stroke="#34766e" strokeWidth="4" markerEnd="url(#force-head)" />

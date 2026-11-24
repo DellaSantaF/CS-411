@@ -1,9 +1,9 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { api } from './api.ts';
 import { fields, targetField } from './shared/contracts.ts';
 import type { Answer, EvaluationReply, FieldId, HelpTarget, LearnerContext, SessionInfo, Stage, TutorMessage } from './shared/contracts.ts';
-import { activityStorage, addInteraction, explanationExample, initialState, resolved, restoredState, taskKey, tokenStorage } from './state.ts';
+import { activityStorage, addInteraction, explanationExample, initialState, resolved, restoredState, taskKey, taskRevealSeconds, tokenStorage } from './state.ts';
 import type { ActivityState } from './state.ts';
 import { parameters, parameterOrder, normalized, magnusForce } from './physics/formula.ts';
 import { Treadmill } from './components/Treadmill.tsx';
@@ -12,6 +12,7 @@ import { FormulaScene } from './components/FormulaScene.tsx';
 import { Introduction } from './components/Introduction.tsx';
 import { AnswerCard } from './components/AnswerCard.tsx';
 import { ContextHelp } from './components/ContextHelp.tsx';
+import { GuidanceDialog } from './components/GuidanceDialog.tsx';
 import { Developer } from './Developer.tsx';
 
 export function App() {
@@ -20,7 +21,7 @@ export function App() {
   const [loading, setLoading] = useState(true), [key, setKey] = useState(''), [entryError, setEntryError] = useState('');
   const [entering, setEntering] = useState(false), [ready, setReady] = useState(false), [motionBusy, setMotionBusy] = useState(false);
   const [tutorBusy, setTutorBusy] = useState<HelpTarget | null>(null), [tutorError, setTutorError] = useState<HelpTarget | null>(null);
-  const [formulaGuidanceHost, setFormulaGuidanceHost] = useState<HTMLDivElement | null>(null);
+
   const player = useRef<TreadmillPlayer>(null), latest = useRef(state); latest.current = state;
   const tutorPending = useRef(false), lastAssessment = useRef(Date.now()), lastFingerprint = useRef('');
   const checking = useRef(new Set<FieldId>());
@@ -41,7 +42,7 @@ export function App() {
   }, [state?.phase, motionBusy, state?.stage]);
   useEffect(() => { window.scrollTo(0, 0); document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true }); }, [state?.stage]);
   useEffect(() => {
-    if (developer || !activeTask) return;
+    if (developer || !activeTask || state?.stage === 'formula' && !state.formulaIntroduced) return;
     let previous = performance.now(), visible = !document.hidden;
     const tick = () => {
       const now = performance.now(), delta = visible ? now - previous : 0; previous = now; visible = !document.hidden;
@@ -50,7 +51,7 @@ export function App() {
     };
     const interval = setInterval(tick, 500); document.addEventListener('visibilitychange', tick);
     return () => { clearInterval(interval); document.removeEventListener('visibilitychange', tick); };
-  }, [developer, activeTask]);
+  }, [developer, activeTask, state?.formulaIntroduced]);
 
   function snapshot(current: ActivityState, target: HelpTarget): LearnerContext {
     const task = taskKey(current), elapsed = task ? current.timers[task] : 0;
@@ -58,12 +59,12 @@ export function App() {
     return { stage: current.stage, phase: current.phase, target,
       drafts: Object.fromEntries(relevant.map(id => [id, current.answers[id].text.slice(0, 1200)])),
       outcomes: Object.fromEntries(relevant.map(id => [id, current.answers[id].status])),
-      parameters: current.parameters, treadmill: current.stage === 'treadmill' ? { controls: current.belt, observedRun: current.lastRun } : undefined, recentInteractions: current.interactions.slice(-8),
+      exploredControls: current.exploredControls, parameters: current.parameters, treadmill: current.stage === 'treadmill' ? { controls: current.belt, observedRun: current.lastRun } : undefined, recentInteractions: current.interactions.slice(-8),
       elapsedMs: elapsed, timeWithoutProgressMs: task ? elapsed - current.progressAt[task] : 0, priorGuidance: [] };
   }
   async function ask(target: HelpTarget, requested: boolean) {
     const current = latest.current;
-    if (!current || current.bubble || tutorPending.current) return;
+    if (!current || current.bubble || tutorPending.current || current.stage === 'formula' && !current.formulaIntroduced) return;
     if (current.stage !== 'formula' && !(current.stage === 'treadmill' && current.phase !== 'setup')) return;
     tutorPending.current = true; setTutorBusy(target); setTutorError(null); lastAssessment.current = Date.now();
     const stage = current.stage, phase = current.phase;
@@ -71,6 +72,7 @@ export function App() {
       const result = await api<TutorMessage>('tutor', { requested, context: snapshot(current, target) });
       setState(value => {
         if (!value || value.stage !== stage || value.phase !== phase || value.bubble || result.decision !== 'help') return value;
+        if (JSON.stringify(value.parameters) !== JSON.stringify(current.parameters) || JSON.stringify(value.belt) !== JSON.stringify(current.belt) || JSON.stringify(value.lastRun) !== JSON.stringify(current.lastRun)) return value;
         const field = targetField(result.target);
         if (!requested && field && resolved(value.answers[field])) return value;
         return { ...value, bubble: result };
@@ -123,7 +125,7 @@ export function App() {
         return { ...changed, bubble: result.accepted && changed.bubble?.target === id ? null : changed.bubble,
           progressAt: result.accepted && task ? { ...value.progressAt, [task]: value.timers[task] } : value.progressAt,
           answers: { ...value.answers, [id]: { ...value.answers[id], status: result.accepted ? 'accepted' : 'editable', checks: value.answers[id].checks + 1,
-            feedback: result.accepted ? (id === 'prediction' ? 'Prediction recorded.' : '') : 'Required information has not yet been provided.' } } };
+            feedback: result.accepted ? (id === 'prediction' ? 'Prediction recorded.' : '') : result.feedback || 'Describe what you observed a little more precisely.' } } };
       });
     } catch { updateAnswer(id, { status: 'editable', feedback: 'Checking could not be completed. Your response is saved; please try again.' }); }
     finally { checking.current.delete(id); }
@@ -132,7 +134,7 @@ export function App() {
     setState(current => {
       if (!current || !session || current.answers[id].status !== 'editable') return current;
       const task = taskKey(current);
-      if (!task || task === 'prediction' || current.timers[task] < session.skipSeconds * 1000) return current;
+      if (!task || task === 'prediction' || current.timers[task] < taskRevealSeconds(session.skipSeconds, task) * 1000) return current;
       const example = id === 'explanation' ? explanationExample : parameters[id as keyof typeof parameters].example;
       return { ...addInteraction(current, 'reveal', id, 'example'), bubble: current.bubble?.target === id ? null : current.bubble,
         answers: { ...current.answers, [id]: { ...current.answers[id], status: 'revealed', example, feedback: '' } } };
@@ -145,7 +147,7 @@ export function App() {
     if (fields.includes(target as FieldId) && resolved(state.answers[target as FieldId])) return null;
     const parameter = target.startsWith('slider-') ? target.slice(7) as keyof typeof parameters : null;
     const label = parameter ? resolved(state.answers[parameter]) ? parameters[parameter].name : `Parameter ${parameters[parameter].number}` : target.replace('treadmill-', 'treadmill ');
-    return <ContextHelp target={target} label={label} condition={session.condition} bubble={state.bubble} busy={tutorBusy} error={tutorError} request={target => void ask(target, true)} dismiss={dismiss} bubbleContainer={parameter ? formulaGuidanceHost : null} />;
+    return <ContextHelp target={target} label={label} condition={session.condition} bubble={state.bubble} busy={tutorBusy} error={tutorError} request={target => void ask(target, true)} dismiss={dismiss} />;
   }
   function answer(id: FieldId, label: string, allowReveal = false) {
     return <AnswerCard id={id} label={label} answer={state!.answers[id]} help={help(id)} allowReveal={allowReveal}
@@ -155,7 +157,7 @@ export function App() {
   const stageLabel = !state ? 'Participant entry' : ({ pretest: 'Pre-test', treadmill: 'Treadmill', introduction: 'Introduction', formula: 'Formula exploration', posttest: 'Post-test' })[state.stage];
   const count = state ? parameterOrder.filter(id => resolved(state.answers[id])).length : 0;
   const progress = !state ? 0 : state.stage === 'pretest' ? 0 : state.stage === 'treadmill' ? (state.phase === 'setup' ? 12 : state.phase === 'prediction' ? 23 : 36) : state.stage === 'introduction' ? 48 : state.stage === 'formula' ? 60 + count * 8 : 100;
-  const eligible = !!state && !!session && (state.stage === 'formula' ? state.timers.formula : state.timers.explanation) >= session.skipSeconds * 1000;
+  const eligible = !!state && !!session && (state.stage === 'formula' ? state.timers.formula : state.timers.explanation) >= taskRevealSeconds(session.skipSeconds, state.stage === 'treadmill' ? 'explanation' : 'formula') * 1000;
   return <>
     <div className="development-notice">{session?.aiMode === 'live' ? 'AI prototype · evaluator and tutor use OpenAI' : session ? 'Development demonstration · evaluator and tutor responses are simulated' : 'Learning activity prototype'}</div>
     <main><header><span className="brand">Learning activity</span><span className="stage-label">{stageLabel}</span></header>
@@ -172,12 +174,12 @@ export function App() {
             {state.phase === 'setup' && !motionBusy ? <><h2>Before starting</h2><p>{ready ? 'Select Drop ball to begin.' : 'Confirm both descriptions in the scene, then drop the ball.'}</p><button id="drop-ball" disabled={!ready} onClick={() => player.current?.drop()}>Drop ball</button></> : state.phase !== 'exploration' && motionBusy ? <><h2>Observe the motion</h2><p>The simulation shows the drop, contact, and rising path.</p></> : state.phase === 'prediction' ? <><h2 className="task-number">Task 1</h2><p className="task-prompt">Which way will the ball’s path bend as it rises?</p><div className="prediction-choices" role="group" aria-label="Your prediction">{(['Left', 'Straight', 'Right'] as const).map((choice, index) => <button key={choice} aria-pressed={state.answers.prediction.text === choice} disabled={resolved(state.answers.prediction)} onClick={() => setState(value => value ? { ...addInteraction(value, 'prediction', 'prediction', choice), bubble: null, answers: { ...value.answers, prediction: { ...value.answers.prediction, text: choice, status: 'accepted', revision: value.answers.prediction.revision + 1 } } } : value)}><span aria-hidden="true">{['↖', '↑', '↗'][index]}</span>{choice}</button>)}</div>{help('prediction')}{resolved(state.answers.prediction) && <p className="feedback" role="status">Prediction recorded.</p>}<button className="flow-action reveal-action" disabled={!resolved(state.answers.prediction)} onClick={() => { setMotionBusy(true); player.current?.reveal(); }}>Reveal what happens</button></> : <><p className="exploration-invitation">Explore the Treadmill Controls below the simulation. Change the direction or speed, then select Run again to compare the paths.</p><h2 className="task-number">Task 2</h2><p className="task-prompt">Why did the ball behave this way? What influences its deflection?</p>{answer('explanation', 'Your explanation', eligible)}<button className="flow-action continue-action" disabled={!resolved(state.answers.explanation)} onClick={() => go('introduction')}>Continue</button></>}
           </section></div>}
         {state.stage === 'introduction' && <Introduction onContinue={() => go('formula')} />}
-        {state.stage === 'formula' && <><div className="formula-layout"><section className="formula-simulation" aria-label="Formula simulation and controls"><div className="scene"><FormulaScene values={state.parameters} /><div className="scene-status pressure-legend"><span><i className="pressure-low" /> Lower pressure <i className="pressure-high" /> Higher pressure</span><span>Force: {magnusForce(state.parameters).toFixed(3)} N</span></div></div>
+        {state.stage === 'formula' && <>{!state.formulaIntroduced && <GuidanceDialog label="About this simulation" close={() => setState(value => value ? { ...value, formulaIntroduced: true } : value)}><h2>About this simulation</h2><p>This is a spinning ball moving through air.</p><p>The view follows the ball, so its centre stays still while the surrounding air moves past it. Explore the sliders and observe what changes.</p></GuidanceDialog>}<div className="formula-layout"><section className="formula-simulation" aria-label="Formula simulation and controls"><div className="scene"><FormulaScene values={state.parameters} /><div className="scene-status pressure-legend"><span><i className="pressure-low" /> Lower pressure <i className="pressure-high" /> Higher pressure</span><span>Force: {magnusForce(state.parameters).toFixed(3)} N</span></div></div>
           <div className="parameter-controls">{parameterOrder.map(id => { const p = parameters[id], known = resolved(state.answers[id]); return <div className="parameter-control" key={id} style={{ '--parameter': p.color } as CSSProperties}><label htmlFor={`slider-${id}`}>{known ? p.name : `Parameter ${p.number}`}</label>{help(`slider-${id}`)}<input id={`slider-${id}`} type="range" min="0" max="100" step="1" value={Math.round(normalized(id, state.parameters[id]) * 100)} aria-valuetext={known ? `${state.parameters[id].toFixed(id === 'area' ? 3 : 2)} ${p.unit}` : undefined} onChange={event => { const next = p.min + Number(event.target.value) / 100 * (p.max - p.min); setState(value => value ? { ...addInteraction(value, 'slider', `slider-${id}`, next.toFixed(3)), parameters: { ...value.parameters, [id]: next } } : value); }} />{known && <output>{state.parameters[id].toFixed(id === 'area' ? 3 : 2)} {p.unit}</output>}</div>; })}</div>
-          <div className="formula-guidance" ref={setFormulaGuidanceHost} />
+
           <div className="formula" aria-label="Magnus force formula"><div>F<sub>Magnus</sub> = <span className={`formula-term ${resolved(state.answers.cl) ? '' : 'masked'}`} style={{ '--parameter': parameters.cl.color } as CSSProperties}>{resolved(state.answers.cl) ? <>C<sub>L</sub></> : '?'}</span></div><div>× ½ × <span className={`formula-term ${resolved(state.answers.rho) ? '' : 'masked'}`} style={{ '--parameter': parameters.rho.color } as CSSProperties}>{resolved(state.answers.rho) ? 'ρ' : '?'}</span></div><div>× <span className={`formula-term ${resolved(state.answers.v) ? '' : 'masked'}`} style={{ '--parameter': parameters.v.color } as CSSProperties}>{resolved(state.answers.v) ? <>v<sup>2</sup></> : '?'}</span></div><div>× <span className={`formula-term ${resolved(state.answers.area) ? '' : 'masked'}`} style={{ '--parameter': parameters.area.color } as CSSProperties}>{resolved(state.answers.area) ? 'A' : '?'}</span></div></div>
           {resolved(state.answers.cl) && <p className="mapping-note">Spin is an illustrative cue for lift coefficient.</p>}
-        </section><section className="formula-task" aria-label="Parameter discovery responses"><h2>Describe each parameter</h2><p>Experiment with the sliders, then describe what each controls. Check each response separately.</p>{parameterOrder.map(id => <div className="parameter-answer card" key={id} style={{ '--parameter': parameters[id].color } as CSSProperties}>{answer(id, resolved(state.answers[id]) ? parameters[id].name : `Parameter ${parameters[id].number}`, eligible)}</div>)}{eligible && count < 4 && <p className="fallback-note">Example descriptions are now available for unresolved responses.</p>}</section></div>
+        </section><section className="formula-task" aria-label="Parameter discovery responses"><h2>Describe each parameter</h2><p>Experiment with the sliders, then describe what each controls. Check each response separately.</p>{parameterOrder.map(id => <div className="parameter-answer card" key={id} style={{ '--parameter': parameters[id].color } as CSSProperties}>{answer(id, `Parameter ${parameters[id].number}:`, eligible)}</div>)}{eligible && count < 4 && <p className="fallback-note">Example descriptions are now available for unresolved responses.</p>}</section></div>
         <div className="formula-footer"><p role="status">{parameterOrder.filter(id => state.answers[id].status === 'accepted').length}/4 discovered{parameterOrder.some(id => state.answers[id].status === 'revealed') && ` · ${parameterOrder.filter(id => state.answers[id].status === 'revealed').length} revealed`}</p><button className="flow-action" disabled={count !== 4} onClick={() => go('posttest')}>Continue</button></div></>}
         {state.stage === 'posttest' && <section className="card placeholder"><h2>Post-test placeholder</h2><p>The post-test will be provided here. You have reached the end of the activity demonstration.</p></section>}
       </>}

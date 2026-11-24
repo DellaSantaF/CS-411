@@ -33,12 +33,12 @@ export interface LearnerContext {
   parameters: Record<ParameterId, number>;
   treadmill?: { controls: BeltSettings; observedRun: BeltSettings };
   interactiveControl?: { id: ControlTarget; label: string; value: string | number; unit?: string };
-  recentInteractions: Interaction[];
+  exploredControls?: string[]; recentInteractions: Interaction[];
   elapsedMs: number; timeWithoutProgressMs: number;
   priorGuidance: { target: HelpTarget; message: string }[];
 }
 export interface EvaluationRequest { field: FieldId; text: string; revision: number }
-export interface EvaluationReply { accepted: boolean; revision: number; mode: 'development' | 'live' }
+export interface EvaluationReply { accepted: boolean; feedback?: string; revision: number; mode: 'development' | 'live' }
 export interface DeveloperSettings {
   skipSeconds: number; thinkingTime: ThinkingTime;
   evaluator: 'auto' | 'accept' | 'reject' | 'technical-error';

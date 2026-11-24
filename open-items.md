@@ -21,4 +21,4 @@ Updated 24 November 2026. Use this list with the [activity specification](./acti
 
 ## Handoff boundary
 
-API access, model choice, live activation, interface approval, control ranges, four-minute skip timing and the Balanced default are already in place. No additional interface-polish checkpoint is pending. Change these only when a new user requirement calls for it.
+API access, model choice, live activation, interface approval, control ranges, six-minute treadmill/four-minute formula skip timing and the Balanced default are already in place. No additional interface-polish checkpoint is pending. Change these only when a new user requirement calls for it.

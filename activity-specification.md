@@ -24,7 +24,7 @@ Navigation is learner-controlled. Acceptance never advances the activity automat
 - Contact visibly induces spin. Initial horizontal travel follows the belt, then the rising path curves oppositely; no instantaneous reversal.
 - Belt speed is 6–10 m/s in 0.5 steps, initially 8 m/s; direction is selectable. Settings affect the next run and are locked during playback.
 - One Run again button; no automatic repetition or reset. Keep the current trajectory plus one faint dashed previous path and apex shadow.
-- Completion requires connecting belt direction OR speed to spin, and spin to deflection. Intuitive language suffices; naming Magnus or pressure differences is unnecessary. A belt-push-only explanation is insufficient.
+- Completion requires explaining that the ball curves opposite to the treadmill because it is spinning; comparing settings or reversing the belt/rotation is not required. Intuitive language suffices; naming Magnus or pressure differences is unnecessary. A belt-push-only explanation is insufficient.
 - Preserve the approved teaching exaggeration and display mapping. These are not calibrated real-world physics; see [motion details](./motion-review.md).
 
 ## Formula discovery
@@ -39,8 +39,11 @@ Use the exact magnitude formula: F_M = 0.5 * rho * C_L * A * v^2. Do not apply t
 | 4: A, cross-sectional area | 0.01–0.05 m²; 0.03 | Sphere size | Area, size, radius or diameter; not total surface area |
 
 - Sphere centered; counterclockwise rotation, leftward relative airflow and upward force from the centre. The introduction uses the same convention.
-- Four controls below the scene, compact colour-matched formula below them, separate response column. All controls remain available.
+- Four controls below the scene, prominent colour-matched formula below them, separate response column. All controls remain available.
 - Initially use Parameter 1–4 labels; hide formal names, units and corresponding formula terms. The constant 1/2 stays visible; velocity discovery reveals v².
+- A required modal introduces the scene as a spinning ball moving through air before manipulation. The view follows the ball; the formula timer starts after dismissal.
+- Ctrl+Enter (and Cmd+Enter) checks the focused response. Borderline answers receive a short clarification question; bare speed requires specifying what is moving.
+- Keep Parameter 1–4 labels after completion, preserve the original wording as “What you called it”, and briefly explain the formal quantity for every discovered/revealed parameter.
 - Acceptance locks that response, reveals its formal label/unit and formula term, marks Discovered and shows localized completion feedback. Other responses remain editable.
 - Count Discovered and Revealed separately. Do not require discovering exponents or force relationships.
 - Flow/pressure drawings are explanatory, not computed fluid dynamics. Spin illustrates C_L; it does not replace C_L in the formula.
@@ -51,7 +54,7 @@ Use the exact magnitude formula: F_M = 0.5 * rho * C_L * A * v^2. Do not apply t
 - Only Check invokes evaluation of written explanations/parameter descriptions. No evaluation on typing; prediction choices use no evaluator.
 - While checking, disable only that response and its Check button. Rejection gives minimal feedback, leaving the response editable.
 - Diagnostics remain server-side for tutoring. Technical failures preserve drafts and do not count as unsuccessful learning attempts.
-- One timer per explanation/formula task; default 240 seconds in both conditions, paused while the tab is hidden. Typing, checks, slider changes and partial discoveries do not reset it.
+- One timer per explanation/formula task; default 360 seconds for the treadmill explanation and 240 seconds for formula discovery in both conditions (treadmill uses 1.5 times the configurable base), paused while the tab is hidden. Typing, checks, slider changes and partial discoveries do not reset it.
 - At the threshold, offer optional reveals without automatic disclosure or advancement. Formula reveals are independent per unresolved parameter.
 - Preserve the original response separately from the supplied example. Revealed responses are read-only and never count as discoveries.
 - Simulation controls remain available after completion, subject to playback locks.
@@ -60,10 +63,13 @@ Use the exact magnitude formula: F_M = 0.5 * rho * C_L * A * v^2. Do not apply t
 
 - Separate evaluator and tutor responsibilities; both currently use gpt-6-luna with low reasoning. The application owns physics, locks, timers, reveals, completion and navigation.
 - Tutor guidance is Socratic: a short observation prompt/question, without giving undiscovered parameter names or the required explanation. It cannot award completion.
-- Reactive: AI Help beside treadmill direction/speed and each formula slider. A failed Check never requests help automatically.
+- Reactive: a small gradient-style ? at the top right of treadmill direction/speed and each formula slider. A failed Check never requests help automatically.
 - Proactive: no Help controls. The model assesses current context and returns help or wait; timing or failed-check count alone must not determine intervention. It may target prediction choices or the same simulation controls.
 - Thinking allowance is Short/Balanced/Extended, initially Balanced; its live behavioral interpretation still needs review.
-- Keep one contextual guidance panel until dismissed. It must not cover editable controls. Formula guidance sits directly below the sliders without moving them.
+- Keep one modal guidance bubble until dismissed, with a pointer to its target control. All other controls are inert until it closes, in both conditions. Close uses a cross; Escape also dismisses.
+- Track explored controls across the session. Reactive support for an untouched slider first asks the learner to manipulate it and observe. Subsequent support uses drafts, checks, previous hints and current settings. Discard pending guidance when settings or the observed treadmill run change.
+- Unresolved slider metadata omits names/units. Tutor prompts forbid disclosure and a server guard replaces obvious leaked names/units with an observation question.
+- Airflow speed uses v multiplied by the displayed radius divided by the physical radius sqrt(A/π), so air travels at the calculation velocity relative to the displayed ball size. Longer dash spacing keeps this faster motion readable. Pressure/streamline shapes remain illustrative.
 
 ## Preserve during improvements
 

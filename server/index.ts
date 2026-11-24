@@ -8,6 +8,7 @@ import { controlTargets, fields, helpTargets, targetField } from '../src/shared/
 import { parameters as parameterDefinitions } from '../src/physics/formula.ts';
 import type { DeveloperSettings, EvaluationRequest, LearnerContext, SessionInfo, Stage } from '../src/shared/contracts.ts';
 import type { CheckedAnswer, GuidanceContext } from './ai/contracts.ts';
+import { protectGuidance } from './ai/guidance.ts';
 import { providersFromEnvironment } from './ai/providers.ts';
 import type { Providers } from './ai/providers.ts';
 
@@ -92,9 +93,9 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
     if (value.target === 'treadmill-speed') interactiveControl = { id: value.target, label: 'Treadmill speed', value: treadmill!.controls.beltSpeed, unit: 'm/s' };
     if (value.target.startsWith('slider-')) {
       const id = field as keyof typeof parameterDefinitions;
-      interactiveControl = { id: value.target as NonNullable<LearnerContext['interactiveControl']>['id'], label: parameterDefinitions[id].name, value: parameters[id], unit: parameterDefinitions[id].unit };
+      interactiveControl = { id: value.target as NonNullable<LearnerContext['interactiveControl']>['id'], label: `Parameter ${parameterDefinitions[id].number}`, value: parameters[id], ...(['accepted', 'revealed'].includes(outcomes[id] ?? '') ? { label: parameterDefinitions[id].name, unit: parameterDefinitions[id].unit } : {}) };
     }
-    return { stage: value.stage as Stage, phase: value.phase, target: value.target, drafts, outcomes, parameters, treadmill, interactiveControl, recentInteractions,
+    return { stage: value.stage as Stage, phase: value.phase, target: value.target, drafts, outcomes, parameters, treadmill, interactiveControl, exploredControls: Array.isArray(value.exploredControls) ? value.exploredControls.filter(id => controlTargets.includes(id as typeof controlTargets[number])).slice(0, 6) : [], recentInteractions,
       elapsedMs: Math.max(0, Number(value.elapsedMs) || 0), timeWithoutProgressMs: Math.max(0, Number(value.timeWithoutProgressMs) || 0),
       priorGuidance: session.guidance.filter(m => relevant.includes(m.target)).slice(-3).map(m => ({ target: m.target as GuidanceContext['target'], message: m.message })),
       checkedAnswers: session.checks.filter(check => relevant.includes(check.field) && (check.field === field || value.target.endsWith('scene'))).slice(-4)
@@ -126,10 +127,10 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
           const submitted: EvaluationRequest = { field: data.field as EvaluationRequest['field'], text: data.text, revision: data.revision as number };
           // Only this Check endpoint invokes the evaluator. Diagnostics remain server-side.
           const previous = providers.mode === 'live' ? session.checks.findLast(check => check.field === submitted.field && check.text === submitted.text) : undefined;
-          const result = previous ? { accepted: previous.accepted, diagnostics: previous.diagnostics } : await invoke(session, () => providers.evaluator(() => session.settings).evaluate(submitted));
+          const result = previous ? { accepted: previous.accepted, diagnostics: previous.diagnostics, feedback: previous.feedback } : await invoke(session, () => providers.evaluator(() => session.settings).evaluate(submitted));
           session.checks.push({ ...submitted, ...result, at: Date.now() });
           session.checks = session.checks.slice(-24);
-          reply(response, 200, { accepted: result.accepted, revision: submitted.revision, mode: providers.mode }); return;
+          reply(response, 200, { accepted: result.accepted, feedback: result.feedback || '', revision: submitted.revision, mode: providers.mode }); return;
         }
         if (url.pathname === '/api/tutor' && request.method === 'POST') {
           const data = await body(request);
@@ -142,7 +143,8 @@ export async function createActivityServer({ developerEnabled = process.env.DEVE
             if (Date.now() - session.lastProactive < 45_000) { reply(response, 200, { decision: 'wait', target: snapshot.target, message: '' }); return; }
             session.lastProactive = Date.now();
           }
-          const result = await invoke(session, () => providers.tutor(() => session.settings).assess(snapshot, requested));
+                    const untouched = requested && snapshot.target.startsWith('slider-') && !snapshot.exploredControls?.includes(snapshot.target);
+          const result = untouched ? { decision: 'help' as const, target: snapshot.target, message: 'Try moving this slider first and observe what changes in the scene. What do you notice at two different settings?' } : protectGuidance(await invoke(session, () => providers.tutor(() => session.settings).assess(snapshot, requested)), snapshot);
           if (result.decision === 'help') { session.guidance.push({ target: result.target, message: result.message }); session.guidance = session.guidance.slice(-4); }
           reply(response, 200, result); return;
         }

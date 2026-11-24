@@ -15,19 +15,20 @@ export function developmentEvaluator(settings: () => DeveloperSettings): Evaluat
     if (field === 'prediction') accepted = !!text.trim();
     if (field === 'cl') accepted = /spin|rotat|angular|turns? (faster|slower)/.test(value);
     if (field === 'rho') accepted = /dens|per (unit )?volume|amount of (air|fluid)|more (air|fluid|particles)|number of (air )?(lines|particles)|packed/.test(value);
-    if (field === 'v') accepted = /speed|velocity|fast|slow/.test(value) && !/only spin|spin speed|rotation speed|rotational/.test(value);
+    if (field === 'v') accepted = /speed|velocity|fast|slow/.test(value) && /ball|sphere|air|fluid|translat/.test(value) && !/only spin|spin speed|rotation speed|rotational/.test(value);
     if (field === 'area') accepted = /area|size|radius|radii|diameter|bigger|larger|smaller/.test(value);
     if (field === 'explanation') {
       const spin = /spin|rotat|turning/.test(value);
       const belt = /belt|treadmill|direction|speed/.test(value);
       const deflection = /curv|deflect|bend|path|force|left|right/.test(value);
       const relation = /because|caus|make|lead|result|chang|produc|due|so |which|affect/.test(value);
-      accepted = spin && belt && deflection && relation;
-      if (!spin || !belt || !relation) diagnostics.push('Belt direction/speed to rotation connection not identified by development checker.');
+      accepted = spin && belt && deflection && relation && /opposite|against|other (way|direction)/.test(value);
+      if (!accepted) diagnostics.push('Expected spin causing curvature opposite to the treadmill.');
       if (!spin || !deflection || !relation) diagnostics.push('Rotation to deflection connection not identified by development checker.');
     }
     if (!accepted && !diagnostics.length) diagnostics.push(`Development checker did not recognize the ${field} description.`);
-    return { accepted, diagnostics };
+        const feedback = accepted ? '' : field === 'v' && /speed|velocity|fast|slow/.test(value) ? 'The speed of what exactly?' : field === 'rho' && /air|lines|particles/.test(value) ? 'What changes about how much is in the same space?' : field === 'explanation' && /spin|rotat/.test(value) ? 'You noticed the spin. Which way does the path curve compared with the treadmill?' : 'Try comparing two settings and describe the visible change more precisely.';
+    return { accepted, diagnostics, feedback };
   } };
 }
 
@@ -71,6 +72,16 @@ export function developmentTutor(settings: () => DeveloperSettings): Tutor {
     const repeated = context.priorGuidance.some(message => message.target === target);
     const help = override === 'help' || (override !== 'wait' && (requested ||
       (unresolved && sufficientContext && !repeated && context.timeWithoutProgressMs >= thinking)));
-    return { decision: help ? 'help' : 'wait', target, message: help ? questions[target] : '' };
+        let message = questions[target];
+    if (requested && target.startsWith('slider-')) {
+      if (!context.exploredControls?.includes(target)) message = 'Try moving this slider first and observe what changes in the scene. What do you notice at two different settings?';
+      else if (context.drafts[field!]?.trim()) message = `You wrote “${context.drafts[field!]!.slice(0, 120)}”. Compare two settings again: which visible change supports that description?`;
+      else if (repeated) message = 'Move this slider between its two ends while keeping the others fixed. Describe the one visible change you can follow.';
+    }
+    if (target === 'treadmill-speed' && context.treadmill) {
+      const { controls, observedRun } = context.treadmill;
+      message = controls.beltSpeed !== observedRun.beltSpeed || controls.direction !== observedRun.direction ? `The selected speed is ${controls.beltSpeed} m/s; the last run used ${observedRun.beltSpeed} m/s. Select Run again to observe the selected settings. What changes in the path?` : `The current run used ${controls.beltSpeed} m/s. Compare it with ${controls.beltSpeed >= 10 ? 'a lower' : 'another'} speed. What changes in the path?`;
+    }
+    return { decision: help ? 'help' : 'wait', target, message: help ? message : '' };
   } };
 }

@@ -116,3 +116,26 @@ h3 { font-size: 16px; font-weight: 600; margin: 0 0 9px; }
 @media (max-width: 900px) { .formula-layout { grid-template-columns: 1fr; }.formula-task { border-left: 0; padding: 24px 0 0; border-top: 1px solid #bfced6; }.formula-task .parameter-answer { margin-bottom: 15px; } }
 @media (max-width: 480px) { .parameter-controls { gap: 6px; }.parameter-control { padding: 10px 6px; }.parameter-name { min-height: 60px; font-size: 10px; }.parameter-symbol { font-size: 13px; }.parameter-control output { font-size: 9px; }.formula { gap: 0; }.formula>div { font-size: 12px; gap: 2px; }.formula-term { min-width: 24px; font-size: 17px; padding: 2px; }.formula sub { font-size: 8px; }.concept-chain { gap: 8px; font-size: 12px; }.introduction { padding: 20px; }.developer-form { grid-template-columns: 1fr; }.entry { margin: 30px auto; } }
 @media (max-width: 600px) { .parameter-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }.parameter-control { padding: 12px; }.parameter-control label { min-height: 20px; }.parameter-control output { font-size: 11px; } }
+
+/* Modal bubbles occupy the top layer; the native backdrop blocks all other controls. */
+.guidance-dialog { position: fixed; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: visible; padding: 24px; border: 1px solid #8faac0; border-radius: 12px; background: #f5f9fd; color: #334f65; box-shadow: 0 12px 40px #25435b35; }
+.guidance-dialog::backdrop { background: #223c5026; }
+.guidance-dialog p { margin: 12px 0 0; font-size: 14px; }
+.guidance-dialog .bubble-label, .guidance-dialog h2 { display: block; padding-right: 24px; }
+.guidance-dialog.anchored::after { content: ''; position: absolute; left: var(--tip-x); width: 14px; height: 14px; background: #f5f9fd; transform: translateX(-50%) rotate(45deg); }
+.guidance-dialog[data-side=below]::after { top: -8px; border-left: 1px solid #8faac0; border-top: 1px solid #8faac0; }
+.guidance-dialog[data-side=above]::after { bottom: -8px; border-right: 1px solid #8faac0; border-bottom: 1px solid #8faac0; }
+.close-popup { position: absolute; right: 8px; top: 8px; font-size: 21px !important; line-height: 1; padding: 4px 7px !important; }
+.scene-callout { padding-right: 42px; }
+.help { width: 28px; height: 28px; padding: 0 !important; border-radius: 50%; font-size: 15px; }
+.parameter-control { position: relative; padding-top: 15px; }
+.parameter-control label { padding-right: 24px; }
+.parameter-control .help-anchor { position: absolute; right: 8px; top: 8px; align-items: flex-end; }
+.control-heading { position: relative; padding-right: 36px; }
+.control-heading .help-anchor { position: absolute; right: 0; top: -4px; }
+.parameter-meaning { font-size: 13px; line-height: 1.5; color: #52697b; }
+.parameter-meaning p { margin: 8px 0; }
+.formula { padding: 28px 16px; gap: 9px; border-width: 2px; }
+.formula>div { font-size: clamp(25px, 2.5vw, 36px); gap: 8px; }
+.formula-term { font-size: clamp(30px, 3vw, 42px); min-width: 40px; }
+.formula sub { font-size: .5em; }

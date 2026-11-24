@@ -10,13 +10,13 @@ export interface ActivityState {
   previousRun: { beltSpeed: number; direction: number } | null;
   timers: { prediction: number; explanation: number; formula: number };
   progressAt: { prediction: number; explanation: number; formula: number };
-  interactions: Interaction[]; bubble: TutorMessage | null;
+  formulaIntroduced: boolean; exploredControls: string[]; interactions: Interaction[]; bubble: TutorMessage | null;
 }
 export function initialState(session: SessionInfo): ActivityState {
   return { sessionId: session.sessionId, stage: 'pretest', phase: 'setup',
     answers: Object.fromEntries(fields.map(id => [id, { text: '', status: 'editable', feedback: '', revision: 0, checks: 0 }])) as Record<FieldId, Answer>,
     parameters: initialParameters(), belt: { beltSpeed: 8, direction: 1 }, lastRun: { beltSpeed: 8, direction: 1 }, previousRun: null,
-    timers: { prediction: 0, explanation: 0, formula: 0 }, progressAt: { prediction: 0, explanation: 0, formula: 0 }, interactions: [], bubble: null };
+    timers: { prediction: 0, explanation: 0, formula: 0 }, progressAt: { prediction: 0, explanation: 0, formula: 0 }, formulaIntroduced: false, exploredControls: [], interactions: [], bubble: null };
 }
 export function restoredState(session: SessionInfo): ActivityState {
   const fresh = initialState(session);
@@ -28,7 +28,7 @@ export function restoredState(session: SessionInfo): ActivityState {
       if (!answer || typeof answer.text !== 'string') return fresh;
       if (answer.status === 'checking') { answer.status = 'editable'; answer.feedback = 'Please check your response again.'; }
     }
-    value.previousRun ??= null;
+    value.previousRun ??= null; value.formulaIntroduced ??= false; value.exploredControls ??= [];
     // Existing development sessions may contain the earlier free-text prediction.
     if (!['Left', 'Straight', 'Right'].includes(value.answers.prediction.text) && value.phase === 'prediction') value.answers.prediction = fresh.answers.prediction;
     if (value.bubble) {
@@ -47,7 +47,8 @@ export function taskKey(state: ActivityState): keyof ActivityState['timers'] | n
   return null;
 }
 export function addInteraction(state: ActivityState, kind: string, target: string, value: string): ActivityState {
-  return { ...state, interactions: [...state.interactions, { kind, target, value, at: Date.now() }].slice(-8) };
+  return { ...state, exploredControls: kind === 'slider' ? [...new Set([...state.exploredControls, target])] : state.exploredControls, interactions: [...state.interactions, { kind, target, value, at: Date.now() }].slice(-8) };
 }
+export const taskRevealSeconds = (baseSeconds: number, task: string) => task === 'explanation' ? baseSeconds * 1.5 : baseSeconds;
 export const resolved = (answer: Answer) => answer.status === 'accepted' || answer.status === 'revealed';
-export const explanationExample = 'The moving belt makes the ball rotate. Reversing the belt reverses that rotation. A spinning ball experiences a deflecting force, so reversing its rotation reverses the direction in which its rising path curves.';
+export const explanationExample = 'The ball curves in the opposite direction to the treadmill because it is spinning. Its spin produces a deflecting force as it moves through air.';
